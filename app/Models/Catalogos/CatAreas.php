@@ -4,6 +4,7 @@ namespace App\Models\Catalogos;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\EmpleadoPuesto;
 
 class CatAreas extends Model
 {
@@ -20,6 +21,11 @@ class CatAreas extends Model
     public function areaPadre()
     {
         return $this->belongsTo(CatAreas::class, 'n_id_cat_area_padre');
+    }
+
+    public function empleadosArea()
+    {
+        return $this->hasMany(EmpleadoPuesto::class, 'n_id_cat_area');
     }
 
 }

@@ -10,4 +10,5 @@ class CatPrioridad extends Model
     use HasFactory;
 
     protected $table = 'tab_cat_prioridad';
+    protected $primaryKey = 'n_id_prioridad';
 }

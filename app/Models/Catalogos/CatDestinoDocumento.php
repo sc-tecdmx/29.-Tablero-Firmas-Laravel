@@ -10,4 +10,6 @@ class CatDestinoDocumento extends Model
     use HasFactory;
 
     protected $table = 'tab_cat_destino_documento';
+
+    protected $primaryKey = 'n_id_tipo_destino';
 }

@@ -11,6 +11,8 @@ class CatTipoDocumento extends Model
 
     protected $table = 'tab_cat_tipo_documento';
 
+    protected $primaryKey = 'n_id_tipo_documento';
+
     public function area()
     {
         return $this->belongsTo(CatAreas::class, 'n_id_cat_area');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Catalogos\CatExpedientes;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -104,10 +105,10 @@ class CatalogoController extends Controller
 
         if ($catalogo == "sexo") {
             $nombreItem = $request->get('nombreItem');
-            $abreviatura = $request->get('abreviatura');
+            $descripcion = $request->get('descripcion');
             $data = [
                 'sexo_desc' => $nombreItem,
-                'sexo' => $abreviatura
+                'sexo' => $descripcion
             ];
             $result = CatSexo::create($data);
             return response()->json(
@@ -118,6 +119,29 @@ class CatalogoController extends Controller
                         'id' => $result->id_sexo,
                         'sexo' => $result->sexo_desc,
                         'abreviatura' => $result->sexo,
+                    ]
+                ]
+                ,
+                200
+            );
+        }
+        if ($catalogo == "expedientes") {
+            $numExpediente = $request->get('numExpediente');
+            $descripcion = $request->get('descripcion');
+            $data = [
+                's_num_expediente' => $numExpediente,
+                's_descripcion' => $descripcion,
+                'n_id_usuario_creador' => 2
+            ];
+            $result = CatExpedientes::create($data);
+            return response()->json(
+                [
+                    'status' => "OK",
+                    'mensaje' => 'Se agregó el item satisfactoriamente',
+                    'data' => [
+                        'id' => $result->n_num_expediente,
+                        'numExpediente' => $result->s_num_expediente,
+                        'descripcion' => $result->s_descripcion,
                     ]
                 ]
                 ,
@@ -163,14 +187,14 @@ class CatalogoController extends Controller
                         'catInstruccion' => $catInstruccion,
                         'catTipoFirma' => $catTipoFirma,
                         'catPrioridad' => $catPrioridad,
-                       /* 'catUAdscripcion' => $catUAdscripcion,
-                        'catFirmaAplicada' => $catFirmaAplicada,
-                        'catEstadoUsuario' => $catEstadoUsuario,
-                        'catEmpleados' => $catEmpleados,
-                        'catRoles' => $catRoles,
-                        'catConfiguracion' => $catConfiguracion,
-                        'catEtapa' => $catEtapa,
-                        'catNotificacion' => $catNotificacion,*/
+                        /* 'catUAdscripcion' => $catUAdscripcion,
+                         'catFirmaAplicada' => $catFirmaAplicada,
+                         'catEstadoUsuario' => $catEstadoUsuario,
+                         'catEmpleados' => $catEmpleados,
+                         'catRoles' => $catRoles,
+                         'catConfiguracion' => $catConfiguracion,
+                         'catEtapa' => $catEtapa,
+                         'catNotificacion' => $catNotificacion,*/
                     ]
                 ]
                 ,
@@ -200,6 +224,10 @@ class CatalogoController extends Controller
         //consulta el catalogo por nombre
         if ($catalogo == "areas") { //areas mostrar arbol
             $catalogo = Catalogo::getCatAreas();
+            return $catalogo;
+        }
+        if ($catalogo == "expedientes") { //areas mostrar arbol
+            $catalogo = Catalogo::getCatExpedientes();
             return $catalogo;
         }
         if ($catalogo == "puestos") {
@@ -255,7 +283,7 @@ class CatalogoController extends Controller
             return $catalogo;
         }
         if ($catalogo == "notificacion") { //[]
-            $catalogo = Catalogo::getCatTipoNotificacion();
+            $catalogo = Catalogo::getCatNotificacion();
             return $catalogo;
         }
         if ($catalogo == "tipo-documento") { //tipo del documento agregar arbol
@@ -264,5 +292,14 @@ class CatalogoController extends Controller
         }
 
         return null;
+    }
+
+    public function autocompletado(Request $request)
+    {
+        $query = $request->get('query');
+        $results = CatExpedientes::where('s_num_expediente', 'like', '%' . $query . '%')->pluck('s_num_expediente');
+
+        return response()->json($results);
+
     }
 }

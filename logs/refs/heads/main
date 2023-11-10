@@ -1,0 +1,6 @@
+0000000000000000000000000000000000000000 53c175ff7894fd9b709f29aa993539bba54c4d73 Graciela Illescas <greyz@MacBook-Air-de-Gibran.local> 1692681451 -0600	clone: from https://gitlab.com/tribunal-electoral/api-backend-gestion.git
+53c175ff7894fd9b709f29aa993539bba54c4d73 89c96b2b93282cac73d7196b0cc22512ddbbfe56 Graciela Illescas <greyz@MacBook-Air-de-Gibran.local> 1692681894 -0600	commit: full project
+89c96b2b93282cac73d7196b0cc22512ddbbfe56 f0e9946b0ff44e62efafc80db91b4601cae45b8d Graciela Illescas <greyz@MacBook-Air-de-Gibran.local> 1692716308 -0600	commit: cambios en servicio de firma
+f0e9946b0ff44e62efafc80db91b4601cae45b8d 6f046c4393b9b9aa5f786c025317656485069471 Graciela Illescas <greyz@MacBook-Air-de-Gibran.local> 1692798975 -0600	commit: retrieve name of file
+6f046c4393b9b9aa5f786c025317656485069471 3cb6566322c1fc9817eb859e835ebb0f2fb52186 Graciela Illescas <greyz@MacBook-Air-de-Gibran.local> 1698459620 -0600	commit: servicios para catálogos
+3cb6566322c1fc9817eb859e835ebb0f2fb52186 24af6d3ecf95e3e02e1ac28f2be479767a689e7a Graciela Illescas <greyz@MacBook-Air-de-Gibran.local> 1699632889 -0600	commit: creacion de servicios de consulta documento

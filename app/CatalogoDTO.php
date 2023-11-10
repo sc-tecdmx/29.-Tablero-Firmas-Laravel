@@ -6,5 +6,4 @@ class CatalogoDTO {
     public $id;
     public $valor;
     public $descripcion;
-
 }

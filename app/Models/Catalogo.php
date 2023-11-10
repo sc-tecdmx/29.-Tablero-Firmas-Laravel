@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Catalogos\CatExpedientes;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +28,8 @@ class Catalogo extends Model
 {
     use HasFactory;
 
-    public static function getCatAreas(){
+    public static function getCatAreas()
+    { //adaptar este catalo a estructura de arbol
         $catalogo = CatAreas::with('adscripcion', 'areaPadre')->get()->map(function ($item) {
             return [
                 'id' => $item->n_id_cat_area,
@@ -40,40 +42,55 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-    public static function getCatPuesto(){
+    public static function getCatPuesto()
+    {
         $catalogo = CatPuesto::all()->map(function ($item) {
-                return [
-                    'id' => $item->n_id_puesto,
-                    'nombramiento' => $item->s_desc_nombramiento,
-                    'tipoUsuario' => $item->n_tipo_usuario
-                ];
-            });
-            return $catalogo;
+            return [
+                'id' => $item->n_id_puesto,
+                'nombramiento' => $item->s_desc_nombramiento,
+                'tipoUsuario' => $item->n_tipo_usuario
+            ];
+        });
+        return $catalogo;
+    }
+    public static function getCatExpedientes()
+    {
+        $catalogo = CatExpedientes::all()->map(function ($item) {
+            return [
+                'id' => $item->n_num_expediente,
+                'numExpediente' => $item->s_num_expediente,
+                'descripcion' => $item->s_descripcion,
+            ];
+        });
+        return $catalogo;
     }
 
-    public static function getCatSexo(){
+    public static function getCatSexo()
+    {
         $catalogo = CatSexo::all()->map(function ($item) {
-                return [
-                    'id' => $item->id_sexo,
-                    'sexo' => $item->sexo_desc,
-                    'abreviatura' => $item->sexo
-                ];
-            });
-            return $catalogo;
+            return [
+                'id' => $item->id_sexo,
+                'sexo' => $item->sexo_desc,
+                'abreviatura' => $item->sexo
+            ];
+        });
+        return $catalogo;
     }
 
-    public static function getCatUAdscripcion(){
+    public static function getCatUAdscripcion()
+    {
         $catalogo = CatUAdscripcion::all()->map(function ($item) {
-                return [
-                    'id' => $item->n_id_u_adscripcion,
-                    'unidad' => $item->s_desc_unidad,
-                    'abreviatura' => $item->s_abrev_unidad
-                ];
-            });
-            return $catalogo;
+            return [
+                'id' => $item->n_id_u_adscripcion,
+                'unidad' => $item->s_desc_unidad,
+                'abreviatura' => $item->s_abrev_unidad
+            ];
+        });
+        return $catalogo;
     }
 
-    public static function getCatFirmaAplicada(){
+    public static function getCatFirmaAplicada()
+    {
         $catalogo = CatFirmaAplicada::all()->map(function ($item) {
             return [
                 'id' => $item->id_firma_aplicada,
@@ -83,7 +100,8 @@ class Catalogo extends Model
         return $catalogo;
     }
 
-    public static function getCatInstruccion(){
+    public static function getCatInstruccion()
+    {
         $catalogo = CatInstruccion::all()->map(function ($item) {
             return [
                 'id' => $item->id_instruccion_doc,
@@ -93,17 +111,19 @@ class Catalogo extends Model
         return $catalogo;
     }
 
-    public static function getCatTipoFirma(){
+    public static function getCatTipoFirma()
+    {
         $catalogo = CatTipoFirma::all()->map(function ($item) {
             return [
                 'id' => $item->id_tipo_firma,
                 'tipoFirma' => $item->desc_tipo_firma
             ];
         });
-            return $catalogo;
+        return $catalogo;
     }
 
-    public static function getCatEstadoUsuario(){
+    public static function getCatEstadoUsuario()
+    {
         $catalogo = CatEstadousurio::all()->map(function ($item) {
             return [
                 'id' => $item->n_id_estado_usuario,
@@ -113,13 +133,16 @@ class Catalogo extends Model
         return $catalogo;
     }
 
-    public static function getCatEmpleados(){
-        $catalogo = CatEmpleados::with('sexo')->get()->map(function ($item) {
+    public static function getCatEmpleados()
+    {
+        $catalogo = CatEmpleados::with('sexo', 'empleadoPuesto.puesto', 'empleadoPuesto.area')->get()->map(function ($item) {
             return [
                 'id' => $item->n_id_num_empleado,
                 'nombre' => $item->nombre,
                 'apellido1' => $item->apellido1,
                 'apellido2' => $item->apellido2,
+                'area' => optional($item->empleadoPuesto->area)->s_desc_area,
+                'puesto' => optional($item->empleadoPuesto->puesto)->s_desc_nombramiento,
                 'sexo' => $item->sexo->sexo_desc,
                 'emailP' => $item->s_email_pers,
                 'emailI' => $item->s_email_inst,
@@ -134,7 +157,8 @@ class Catalogo extends Model
         return $catalogo;
     }
 
-    public static function getCatRoles(){
+    public static function getCatRoles()
+    {
         $catalogo = CatRoles::with('rolPadre')->get()->map(function ($item) {
             return [
                 'id' => $item->n_id_rol,
@@ -146,17 +170,19 @@ class Catalogo extends Model
         return $catalogo;
     }
 
-    public static function getCatDestino(){
+    public static function getCatDestino()
+    {
         $catalogo = CatDestinoDocumento::all()->map(function ($item) {
             return [
                 'id' => $item->n_id_tipo_destino,
                 'destino' => $item->desc_destino_documento
             ];
         });
-            return $catalogo;
+        return $catalogo;
     }
 
-    public static function getCatConfiguracion(){
+    public static function getCatConfiguracion()
+    {
         $catalogo = CatDocConfiguracion::all()->map(function ($item) {
             return [
                 'id' => $item->n_id_doc_config,
@@ -164,30 +190,33 @@ class Catalogo extends Model
                 'valor' => $item->s_valor
             ];
         });
-            return $catalogo;
+        return $catalogo;
     }
 
-    public static function getCatEtapaDoc(){
+    public static function getCatEtapaDoc()
+    {
         $catalogo = CatEtapaDoc::all()->map(function ($item) {
             return [
                 'id' => $item->id_etapa_documento,
                 'etapa' => $item->s_desc_etapa
             ];
         });
-            return $catalogo;
+        return $catalogo;
     }
 
-    public static function getCatPrioridad(){
+    public static function getCatPrioridad()
+    {
         $catalogo = CatPrioridad::all()->map(function ($item) {
             return [
                 'id' => $item->n_id_prioridad,
                 'prioridad' => $item->desc_prioridad
             ];
         });
-            return $catalogo;
+        return $catalogo;
     }
 
-    public static function getCatNotificacion(){
+    public static function getCatNotificacion()
+    {
         $catalogo = CatTipoNotificacion::all()->map(function ($item) {
             return [
                 'id' => $item->n_id_tipo_notif,
@@ -195,10 +224,11 @@ class Catalogo extends Model
                 'icono' => $item->icon_tipo_notif
             ];
         });
-            return $catalogo;
+        return $catalogo;
     }
 
-    public static function getCatTipoDocumento(){
+    public static function getCatTipoDocumento()
+    {
         $catalogo = CatTipoDocumento::with('area')->get()->map(function ($item) {
             return [
                 'id' => $item->n_id_tipo_documento,
@@ -212,14 +242,15 @@ class Catalogo extends Model
 
     /**----------------- */
 
-    public static function findMenuByName($menus, $menuName) {
+    public static function findMenuByName($menus, $menuName)
+    {
         foreach ($menus as $menu) {
-            if ($menu['nombre'] == $menuName) {
+            if ($menu['nombreModulo'] == $menuName) {
                 return $menu;
             }
 
-            if (isset($menu['menu']) && is_array($menu['menu'])) {
-                $result = self::findMenuByName($menu['menu'], $menuName);
+            if (isset($menu['modulos']) && is_array($menu['modulos'])) {
+                $result = self::findMenuByName($menu['modulos'], $menuName);
                 if ($result) {
                     return $result;
                 }
