@@ -102,7 +102,17 @@ class CatalogoController extends Controller
         if (empty($token)) {
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
         }
+        $data = Http::withHeaders([
+            'Authorization' => $token,
+        ])->get('http://localhost:8080/api/seguridad/userinfo');
 
+        $response = json_decode($data, true);
+        if (isset($response['data']) && isset($response['data']['idUsuario'])) {
+            $idUsuario = $response['data']['idUsuario'];
+        } else {
+            $idUsuario = null;
+        }
+////////////////////
         if ($catalogo == "sexo") {
             $nombreItem = $request->get('nombreItem');
             $descripcion = $request->get('descripcion');
@@ -131,7 +141,7 @@ class CatalogoController extends Controller
             $data = [
                 's_num_expediente' => $numExpediente,
                 's_descripcion' => $descripcion,
-                'n_id_usuario_creador' => 2
+                'n_id_usuario_creador' => $idUsuario
             ];
             $result = CatExpedientes::create($data);
             return response()->json(
@@ -297,7 +307,7 @@ class CatalogoController extends Controller
     public function autocompletado(Request $request)
     {
         $query = $request->get('query');
-        $results = CatExpedientes::where('s_num_expediente', 'like', '%' . $query . '%')->pluck('s_num_expediente');
+        $results = CatExpedientes::where('s_num_expediente', 'like', '%' . $query . '%')->get(['n_num_expediente', 's_num_expediente','s_descripcion']);
 
         return response()->json($results);
 
