@@ -13,6 +13,7 @@ use App\Models\Catalogos\CatSexo;
 use App\Models\Catalogos\CatUAdscripcion;
 use App\Models\Catalogos\CatFirmaAplicada;
 use App\Models\Catalogos\CatInstruccion;
+use App\Models\Catalogos\CatInstruccionDest;
 use App\Models\Catalogos\CatTipoFirma;
 use App\Models\Catalogos\CatEstadousurio;
 use App\Models\Catalogos\CatEmpleados;
@@ -23,6 +24,7 @@ use App\Models\Catalogos\CatEtapaDoc;
 use App\Models\Catalogos\CatPrioridad;
 use App\Models\Catalogos\CatTipoNotificacion;
 use App\Models\Catalogos\CatTipoDocumento;
+
 
 class Catalogo extends Model
 {
@@ -104,8 +106,19 @@ class Catalogo extends Model
     {
         $catalogo = CatInstruccion::all()->map(function ($item) {
             return [
-                'id' => $item->id_instruccion_doc,
-                'instruccion' => $item->desc_instruccion_doc
+                'id' => $item->n_id_inst_firmante,
+                'instruccion' => $item->desc_instr_firmante
+            ];
+        });
+        return $catalogo;
+    }
+
+    public static function getCatInstruccionDest()
+    {
+        $catalogo = CatInstruccionDest::all()->map(function ($item) {
+            return [
+                'id' => $item->n_id_inst_dest,
+                'instruccion' => $item->desc_inst_dest
             ];
         });
         return $catalogo;

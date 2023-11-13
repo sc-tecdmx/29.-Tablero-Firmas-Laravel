@@ -170,7 +170,8 @@ class CatalogoController extends Controller
         if ($pantalla == 'nuevo-documento') {
             $catDestino = Catalogo::getCatDestino();
             $catTipoDocumento = Catalogo::getCatTipoDocumento();
-            $catInstruccion = Catalogo::getCatInstruccion();
+            $catInstruccionFirmantes = Catalogo::getCatInstruccion();
+            $catInstruccionDestinatarios = Catalogo::getCatInstruccionDest();
             $catTipoFirma = Catalogo::getCatTipoFirma();
             $catPrioridad = Catalogo::getCatPrioridad();
 
@@ -194,7 +195,8 @@ class CatalogoController extends Controller
 
                         'catDestino' => $catDestino,
                         'catTipoDocumento' => $catTipoDocumento,
-                        'catInstruccion' => $catInstruccion,
+                        'catInstruccionFirmantes' => $catInstruccionFirmantes,
+                        'catInstruccionDestinatarios' => $catInstruccionDestinatarios,
                         'catTipoFirma' => $catTipoFirma,
                         'catPrioridad' => $catPrioridad,
                         /* 'catUAdscripcion' => $catUAdscripcion,
