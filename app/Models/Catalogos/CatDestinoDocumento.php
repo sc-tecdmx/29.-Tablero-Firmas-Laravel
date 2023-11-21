@@ -12,4 +12,6 @@ class CatDestinoDocumento extends Model
     protected $table = 'tab_cat_destino_documento';
 
     protected $primaryKey = 'n_id_tipo_destino';
+    public $timestamps = false;
+    protected $fillable = ['n_id_tipo_destino','desc_destino_documento'];
 }

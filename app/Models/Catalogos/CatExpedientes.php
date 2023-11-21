@@ -14,6 +14,7 @@ class CatExpedientes extends Model
     public $timestamps = false;
     protected $fillable = [
         's_num_expediente',
+        'n_num_expediente',
         's_descripcion',
         'n_id_usuario_creador'
     ];

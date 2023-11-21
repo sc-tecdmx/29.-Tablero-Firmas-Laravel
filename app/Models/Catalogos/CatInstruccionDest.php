@@ -10,4 +10,6 @@ class CatInstruccionDest extends Model
     use HasFactory;
 
     protected $table = 'tab_cat_inst_dest';
+    public $timestamps = false;
+    protected $fillable = ['desc_inst_dest','n_id_inst_dest'];
 }

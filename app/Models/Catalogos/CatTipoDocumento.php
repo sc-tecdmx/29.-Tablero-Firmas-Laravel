@@ -12,6 +12,8 @@ class CatTipoDocumento extends Model
     protected $table = 'tab_cat_tipo_documento';
 
     protected $primaryKey = 'n_id_tipo_documento';
+    public $timestamps = false;
+    protected $fillable = ['n_id_tipo_documento','desc_tipo_documento','n_id_cat_area'];
 
     public function area()
     {

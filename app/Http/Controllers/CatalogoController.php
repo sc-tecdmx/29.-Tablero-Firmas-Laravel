@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Catalogos\CatExpedientes;
+use App\Models\Catalogos\CatInstruccionDest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -21,7 +22,7 @@ use App\Models\Catalogos\CatEmpleados;
 use App\Models\Catalogos\CatRoles;
 use App\Models\Catalogos\CatDestinoDocumento;
 use App\Models\Catalogos\CatDocConfiguracion;
-use App\Models\Catalogos\CatTEtapaDoc;
+use App\Models\Catalogos\CatEtapaDoc;
 use App\Models\Catalogos\CatPrioridad;
 use App\Models\Catalogos\CatTipoNotificacion;
 use App\Models\Catalogos\CatTipoDocumento;
@@ -112,17 +113,23 @@ class CatalogoController extends Controller
         } else {
             $idUsuario = null;
         }
-////////////////////
+        ////////////////////
         if ($catalogo == "sexo") {
-            $nombreItem = $request->get('nombreItem');
+            $abreviatura = $request->get('abreviatura');
             $descripcion = $request->get('descripcion');
-            $data = [
-                'sexo_desc' => $nombreItem,
-                'sexo' => $descripcion
-            ];
-            $result = CatSexo::create($data);
-            return response()->json(
-                [
+
+            // Verificar si ya existe un registro con esos datos
+            $existe = CatSexo::where('sexo_desc', $descripcion)
+                ->first();
+
+            if (!$existe) {
+                // Si no existe, crea un nuevo registro
+                $result = CatSexo::create([
+                    'sexo_desc' => $descripcion,
+                    'sexo' => $abreviatura
+                ]);
+
+                return response()->json([
                     'status' => "OK",
                     'mensaje' => 'Se agregó el item satisfactoriamente',
                     'data' => [
@@ -130,34 +137,372 @@ class CatalogoController extends Controller
                         'sexo' => $result->sexo_desc,
                         'abreviatura' => $result->sexo,
                     ]
-                ]
-                ,
-                200
-            );
+                ], 200);
+
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
         }
+        /////////
         if ($catalogo == "expedientes") {
             $numExpediente = $request->get('numExpediente');
             $descripcion = $request->get('descripcion');
-            $data = [
-                's_num_expediente' => $numExpediente,
-                's_descripcion' => $descripcion,
-                'n_id_usuario_creador' => $idUsuario
-            ];
-            $result = CatExpedientes::create($data);
-            return response()->json(
-                [
-                    'status' => "OK",
-                    'mensaje' => 'Se agregó el item satisfactoriamente',
-                    'data' => [
-                        'id' => $result->n_num_expediente,
-                        'numExpediente' => $result->s_num_expediente,
-                        'descripcion' => $result->s_descripcion,
-                    ]
-                ]
-                ,
-                200
-            );
+
+            // Verificar si ya existe un registro con ese número de expediente
+            $existe = CatExpedientes::where('s_num_expediente', $numExpediente)
+                ->where('s_descripcion', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        's_num_expediente' => $numExpediente,
+                        's_descripcion' => $descripcion,
+                        'n_id_usuario_creador' => $idUsuario
+                    ];
+                    $result = CatExpedientes::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_num_expediente,
+                            'numExpediente' => $result->s_num_expediente,
+                            'descripcion' => $result->s_descripcion,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con alguno de los datos proporcionados.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El expediente con ese número ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
         }
+        ////
+        if ($catalogo == "instFirmante") {
+            $descripcion = $request->get('descripcion');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatInstruccion::where('desc_instr_firmante', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $result = CatInstruccion::create([
+                        'desc_instr_firmante' => $descripcion,
+                    ]);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_id_inst_firmante,
+                            'descripcion' => $result->desc_instr_firmante,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+        ////
+        if ($catalogo == "instDestinatario") {
+            $descripcion = $request->get('descripcion');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatInstruccionDest::where('desc_inst_dest', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        'desc_inst_dest' => $descripcion,
+                    ];
+                    $result = CatInstruccionDest::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_id_inst_dest,
+                            'descripcion' => $result->desc_inst_dest,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+        ///
+        if ($catalogo == "etapaDocumento") {
+            $descripcion = $request->get('descripcion');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatEtapaDoc::where('s_desc_etapa', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        's_desc_etapa' => $descripcion,
+                    ];
+                    $result = CatEtapaDoc::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->id_etapa_documento,
+                            'descripcion' => $result->s_desc_etapa,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+         ///
+         if ($catalogo == "tipoNotificacion") {
+            $descripcion = $request->get('descripcion');
+            $icono = $request->get('icono');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatTipoNotificacion::where('desc_tipo', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        'desc_tipo' => $descripcion,
+                        'icon_tipo_notif' => $icono,
+                    ];
+                    $result = CatTipoNotificacion::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_id_tipo_notif,
+                            'descripcion' => $result->desc_tipo,
+                            'icono' => $result->icon_tipo_notif,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+         ///
+         if ($catalogo == "docConfig") {
+            $descripcion = $request->get('descripcion');
+            $abreviacion = $request->get('abreviacion');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatDocConfiguracion::where('s_valor', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        's_valor' => $descripcion,
+                        's_atributo' => $abreviacion
+                    ];
+                    $result = CatDocConfiguracion::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_id_doc_config,
+                            'descripcion' => $result->s_valor,
+                            'abreviatura' => $result->s_atributo,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+         ////
+         if ($catalogo == "prioridad") {
+            $descripcion = $request->get('descripcion');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatPrioridad::where('desc_prioridad', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        'desc_prioridad' => $descripcion,
+                    ];
+                    $result = CatPrioridad::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_id_prioridad,
+                            'descripcion' => $result->desc_prioridad,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+         ////
+         if ($catalogo == "destinoDoc") {
+            $descripcion = $request->get('descripcion');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatDestinoDocumento::where('desc_destino_documento', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        'desc_destino_documento' => $descripcion,
+                    ];
+                    $result = CatDestinoDocumento::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_id_tipo_destino,
+                            'descripcion' => $result->desc_destino_documento,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+         ////
+         if ($catalogo == "tipoDoc") {
+            $descripcion = $request->get('descripcion');
+            $areaId = $request->get('areaId');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatTipoDocumento::where('desc_tipo_documento', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        'desc_tipo_documento' => $descripcion,
+                        'n_id_cat_area'=>$areaId
+                    ];
+                    $result = CatTipoDocumento::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->n_id_tipo_documento,
+                            'descripcion' => $result->desc_tipo_documento,
+                            'areaId'=> $result->n_id_cat_area,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
+
     }
 
     public function getCatalogoPantalla($pantalla, Request $request)
@@ -309,7 +654,7 @@ class CatalogoController extends Controller
     public function autocompletado(Request $request)
     {
         $query = $request->get('query');
-        $results = CatExpedientes::where('s_num_expediente', 'like', '%' . $query . '%')->get(['n_num_expediente', 's_num_expediente','s_descripcion']);
+        $results = CatExpedientes::where('s_num_expediente', 'like', '%' . $query . '%')->get(['n_num_expediente', 's_num_expediente', 's_descripcion']);
 
         return response()->json($results);
 

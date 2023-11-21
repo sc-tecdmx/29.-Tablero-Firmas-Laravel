@@ -54,4 +54,5 @@ class Documentos extends Model
     {
         return $this->hasMany(DocumentoAdjunto::class, 'id_document', 'n_id_documento');
     }
+
 }

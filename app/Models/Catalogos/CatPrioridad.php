@@ -11,4 +11,7 @@ class CatPrioridad extends Model
 
     protected $table = 'tab_cat_prioridad';
     protected $primaryKey = 'n_id_prioridad';
+
+    public $timestamps = false;
+    protected $fillable = ['n_id_prioridad','desc_prioridad'];
 }

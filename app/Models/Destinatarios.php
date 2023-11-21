@@ -13,4 +13,9 @@ class Destinatarios extends Model
     {
         return $this->belongsTo(CatEmpleados::class, 'n_id_num_empleado', 'n_id_num_empleado');
     }
+
+    public function empleadoPuesto()
+    {
+        return $this->hasOne(EmpleadoPuesto::class, 'n_id_num_empleado', 'n_id_num_empleado');
+    }
 }

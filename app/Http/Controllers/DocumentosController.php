@@ -27,6 +27,10 @@ class DocumentosController extends Controller
             'prioridad',
             'firmantes.empleado',
             'destinatarios.empleado',
+            'firmantes.empleadoPuesto.area',
+            'firmantes.empleadoPuesto.puesto',
+            'destinatarios.empleadoPuesto.area',
+            'destinatarios.empleadoPuesto.puesto',
             'documentosAdjuntos'
         ])->find($documentoId);
 
@@ -39,6 +43,8 @@ class DocumentosController extends Controller
                     'nombre' => $firmante->empleado->nombre,
                     'apellido1' => $firmante->empleado->apellido1,
                     'apellido2' => $firmante->empleado->apellido2,
+                    'area'=> optional($firmante->empleadoPuesto->area)->s_desc_area,
+                    'puesto' => optional($firmante->empleadoPuesto->puesto)->s_desc_nombramiento,
                 ];
             });
 
@@ -49,6 +55,8 @@ class DocumentosController extends Controller
                     'nombre' => $destinatario->empleado->nombre,
                     'apellido1' => $destinatario->empleado->apellido1,
                     'apellido2' => $destinatario->empleado->apellido2,
+                    'area'=> optional($destinatario->empleadoPuesto->area)->s_desc_area,
+                    'puesto' => optional($destinatario->empleadoPuesto->puesto)->s_desc_nombramiento,
                 ];
             });
 
