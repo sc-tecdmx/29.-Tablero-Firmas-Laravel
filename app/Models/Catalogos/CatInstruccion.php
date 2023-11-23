@@ -11,6 +11,7 @@ class CatInstruccion extends Model
 
     protected $table = 'tab_cat_inst_firmantes';
     public $timestamps = false;
+    protected $primaryKey = 'n_id_inst_firmante';
     protected $fillable = ['desc_instr_firmante','n_id_inst_firmante'];
 
 }

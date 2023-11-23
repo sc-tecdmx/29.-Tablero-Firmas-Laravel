@@ -11,5 +11,6 @@ class CatDocConfiguracion extends Model
 
     protected $table = 'tab_cat_doc_config';
     public $timestamps = false;
+    protected $primaryKey = 'n_id_doc_config';
     protected $fillable = ['n_id_doc_config','s_valor','s_atributo'];
 }

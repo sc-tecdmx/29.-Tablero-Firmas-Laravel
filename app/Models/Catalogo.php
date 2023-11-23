@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Catalogos\CatExpedientes;
+use App\Models\Catalogos\CatNivelModulo;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,16 @@ class Catalogo extends Model
                 'area' => $item->s_desc_area,
                 'abreviatura' => $item->s_abrev_area
 
+            ];
+        });
+        return $catalogo;
+    }
+    public static function getNivelModulo()
+    {
+        $catalogo = CatNivelModulo::all()->map(function ($item) {
+            return [
+                'id' => $item->n_id_nivel,
+                'descripcion' => $item->desc_nivel
             ];
         });
         return $catalogo;

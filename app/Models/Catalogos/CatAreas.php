@@ -13,6 +13,7 @@ class CatAreas extends Model
     protected $table = 'inst_cat_areas';
 
     protected $primaryKey = 'n_id_cat_area';
+    protected $fillable = ['n_id_cat_area', 'n_id_u_adscripcion', 's_desc_area', 's_abrev_area', 'n_id_cat_area_padre'];
     public function adscripcion()
     {
         return $this->belongsTo(CatUAdscripcion::class, 'n_id_u_adscripcion');

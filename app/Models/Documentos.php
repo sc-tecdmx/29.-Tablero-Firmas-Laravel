@@ -20,6 +20,10 @@ class Documentos extends Model
 
     protected $primaryKey = 'n_id_documento';
 
+    public function docConfiguracion()
+    {
+        return $this->hasMany(DocConfiguracion::class, 'n_id_documento');
+    }
     public function destino()
     {
         return $this->belongsTo(CatDestinoDocumento::class, 'n_id_tipo_destino');

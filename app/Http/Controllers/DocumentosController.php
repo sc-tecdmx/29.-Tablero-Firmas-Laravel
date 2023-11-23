@@ -26,16 +26,23 @@ class DocumentosController extends Controller
             'expediente',
             'prioridad',
             'firmantes.empleado',
+            'firmantes.instruccion',
             'destinatarios.empleado',
+            'destinatarios.instruccion',
             'firmantes.empleadoPuesto.area',
             'firmantes.empleadoPuesto.puesto',
             'destinatarios.empleadoPuesto.area',
             'destinatarios.empleadoPuesto.puesto',
-            'documentosAdjuntos'
+            'documentosAdjuntos',
+            'docConfiguracion.configuracion'
         ])->find($documentoId);
 
         if ($document) {
-
+            $transformedConfiguración = $document->docConfiguracion->map(function ($confi) {
+                return [
+                    'valor' => $confi->configuracion->s_valor
+                ];
+            });
             // Transformar los datos de firmantes
             $transformedFirmantes = $document->firmantes->map(function ($firmante) {
                 return [
@@ -43,6 +50,7 @@ class DocumentosController extends Controller
                     'nombre' => $firmante->empleado->nombre,
                     'apellido1' => $firmante->empleado->apellido1,
                     'apellido2' => $firmante->empleado->apellido2,
+                    'instruccion' => $firmante->instruccion->desc_instr_firmante,
                     'area'=> optional($firmante->empleadoPuesto->area)->s_desc_area,
                     'puesto' => optional($firmante->empleadoPuesto->puesto)->s_desc_nombramiento,
                 ];
@@ -55,6 +63,7 @@ class DocumentosController extends Controller
                     'nombre' => $destinatario->empleado->nombre,
                     'apellido1' => $destinatario->empleado->apellido1,
                     'apellido2' => $destinatario->empleado->apellido2,
+                    'instruccion' => $destinatario->instruccion->desc_inst_dest,
                     'area'=> optional($destinatario->empleadoPuesto->area)->s_desc_area,
                     'puesto' => optional($destinatario->empleadoPuesto->puesto)->s_desc_nombramiento,
                 ];
@@ -63,7 +72,9 @@ class DocumentosController extends Controller
             $transformedDocumentosAdjuntos = $document->documentosAdjuntos->map(function ($adjunto) {
                 // Aquí simplemente estamos extrayendo el documento_path, pero puedes ajustarlo como necesites
                 return [
-                    'documentoPath' => $adjunto->documento_path
+                    'documentoPath' => $adjunto->documento_path,
+                    'docBase64' => $adjunto->documento_base64,
+                    'fileType'=> $adjunto->documento_filetype,
                 ];
             });
 
@@ -85,9 +96,12 @@ class DocumentosController extends Controller
                 'asunto'=> $document->s_asunto,
                 'contenido'=> $document->s_contenido,
                 'fechaLimiteFirma'=> $document->d_fecha_limite_firma,
+                'notas'=> $document->s_notas,
+                'configuracion'=> $transformedConfiguración,
                 'firmantes'=> $transformedFirmantes,
                 'destinatarios'=> $transformedDestinatarios,
                 'documentosAdjuntos' => $transformedDocumentosAdjuntos
+
 
             ];
 

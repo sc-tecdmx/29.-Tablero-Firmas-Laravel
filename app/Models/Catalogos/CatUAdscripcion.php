@@ -11,4 +11,12 @@ class CatUAdscripcion extends Model
 
     protected $table = 'inst_u_adscripcion';
     protected $primaryKey = 'n_id_u_adscripcion';
+
+    public $timestamps = false;
+
+    protected $fillable = [
+        'n_id_u_adscripcion',
+        's_desc_unidad',
+        's_abrev_unidad'
+    ];
 }

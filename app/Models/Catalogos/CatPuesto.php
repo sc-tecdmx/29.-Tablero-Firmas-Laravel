@@ -14,6 +14,13 @@ class CatPuesto extends Model
 
     protected $primaryKey ='n_id_puesto';
 
+    public $timestamps = false;
+
+    protected $fillable = [
+        'n_id_puesto',
+        's_desc_nombramiento',
+        'n_tipo_usuario'
+    ];
     public function empleadosPuesto()
     {
         return $this->hasMany(EmpleadoPuesto::class, 'n_id_puesto');
