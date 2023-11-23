@@ -37,7 +37,7 @@ class Catalogo extends Model
             return [
                 'id' => $item->n_id_cat_area,
                 'unidadAdscripcion' => $item->adscripcion->s_desc_unidad,
-                'areaPadre' => $item->areaPadre->s_desc_area,
+                'areaPadre' => optional($item->areaPadre)->s_desc_area,
                 'area' => $item->s_desc_area,
                 'abreviatura' => $item->s_abrev_area
 
