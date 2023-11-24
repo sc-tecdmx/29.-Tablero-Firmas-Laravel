@@ -3,6 +3,7 @@
 namespace App\Models;
 
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,6 +21,26 @@ class Documentos extends Model
 
     protected $primaryKey = 'n_id_documento';
 
+    protected $dates = ['creacion_documento_fecha', 'd_fecha_limite_firma'];
+
+    public function scopeSearch($query, $term)
+    {
+        return $query->where('folio_documento', 'LIKE', "%{$term}%")
+            ->orWhere('folio_especial', 'LIKE', "%{$term}%")
+            ->orWhere('s_asunto', 'LIKE', "%{$term}%")
+            ->orWhere('s_contenido', 'LIKE', "%{$term}%")
+            ->orWhere('creacion_documento_fecha', 'LIKE', "%{$term}%")
+            ->orWhereHas('firmantes.empleado', function ($q) use ($term) {
+                $q->where('nombre', 'LIKE', "%{$term}%")
+                    ->orWhere('apellido1', 'LIKE', "%{$term}%")
+                    ->orWhere('apellido2', 'LIKE', "%{$term}%");
+            })
+            ->orWhereHas('destinatarios.empleado', function ($q) use ($term) {
+                $q->where('nombre', 'LIKE', "%{$term}%")
+                    ->orWhere('apellido1', 'LIKE', "%{$term}%")
+                    ->orWhere('apellido2', 'LIKE', "%{$term}%");
+            });
+    }
     public function docConfiguracion()
     {
         return $this->hasMany(DocConfiguracion::class, 'n_id_documento');

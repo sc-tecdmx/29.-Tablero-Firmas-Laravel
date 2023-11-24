@@ -48,5 +48,11 @@ Route::get('documentos-usuario/{userId}', [DocumentosController::class, 'getDocu
 
 Route::get('documento/{documentoId}', [DocumentosController::class, 'getDocumentsByDocumentId']);
 
+Route::get('busqueda-general', [DocumentosController::class, 'getDocumentsByQuery']);
+
 //autocompletado
 Route::get('/autocompletado', [CatalogoController::class, 'autocompletado']);
+
+Route::get('/test', function () {
+    return response()->json(['message' => 'Test route works']);
+});
