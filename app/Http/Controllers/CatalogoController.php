@@ -862,10 +862,27 @@ class CatalogoController extends Controller
         if (empty($token)) {
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
         }
+        $response = Http::withHeaders([
+            'Authorization' => $token,
+        ])->post($this->APP_SEGURIDAD.'/api/seguridad/userinfo');
 
+        if ($response->successful()) {
+            $data = $response->json();
+
+            if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
+                $idEmpleado = $data['data']['idEmpleado'];
+                // Continuar con la operación usando $idEmpleado...
+            } else {
+                // Manejar la ausencia de idEmpleado en la respuesta...
+                return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
+            }
+        } else {
+            // Manejar respuesta fallida...
+            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        }
         if ($pantalla == 'nuevo-documento') {
             $catDestino = Catalogo::getCatDestino();
-            $catTipoDocumento = Catalogo::getCatTipoDocumento();
+            $catTipoDocumento = Catalogo::getCatTipoDocumento($idEmpleado);
             $catInstruccionFirmantes = Catalogo::getCatInstruccion();
             $catInstruccionDestinatarios = Catalogo::getCatInstruccionDest();
             $catTipoFirma = Catalogo::getCatTipoFirma();
