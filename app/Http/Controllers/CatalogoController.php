@@ -35,6 +35,11 @@ use App\CatalogoDTO;
 
 class CatalogoController extends Controller
 {
+    public $APP_SEGURIDAD;
+    public function __construct()
+    {
+        $this->APP_SEGURIDAD = env('APP_URL_SEGURIDAD');
+    }
 
     public function eliminarItemCatalogo($catalogo, $id, Request $request)
     {
@@ -132,8 +137,8 @@ class CatalogoController extends Controller
                 return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
             }
         }
-         //////
-         if ($catalogo == "instFirmante") {
+        //////
+        if ($catalogo == "instFirmante") {
             try {
                 $validatedData = $request->validate([
                     'descripcion' => [Rule::unique('tab_cat_inst_firmantes', 'desc_instr_firmante')->ignore($id, 'n_id_inst_firmante')],
@@ -168,7 +173,7 @@ class CatalogoController extends Controller
         }
         $data = Http::withHeaders([
             'Authorization' => $token,
-        ])->get('http://localhost:8080/api/seguridad/userinfo');
+        ])->get($this->APP_SEGURIDAD.'/api/seguridad/userinfo');
 
         $response = json_decode($data, true);
         if (isset($response['data']) && isset($response['data']['idUsuario'])) {
@@ -530,7 +535,8 @@ class CatalogoController extends Controller
             $areaId = $request->get('areaId');
 
             // Verificar si ya existe un registro con esa descripción
-            $existe = CatTipoDocumento::where('desc_tipo_documento', $descripcion)->first();
+            $existe = CatTipoDocumento::where('desc_tipo_documento', $descripcion)
+                ->where('n_id_cat_area', $areaId)->first();
 
             if (!$existe) {
                 try {
@@ -649,22 +655,23 @@ class CatalogoController extends Controller
         }
         //// esta faltando resolver dettalles
         if ($catalogo == "area") {
-            // $unidad = $request->get('idUnidadAds');
+            $unidad = $request->get('idUnidadAds');
             $descripcion = $request->get('descripcion');
             $abreviatura = $request->get('abreviatura');
-            //  $areaPadre = $request->get('idAreaPadre');
+            $areaPadre = $request->get('idAreaPadre');
 
             // Verificar si ya existe un registro con esa descripción
-            $existe = CatAreas::where('s_desc_area', $descripcion)->first();
+            $existe = CatAreas::where('s_desc_area', $descripcion)
+                ->first();
 
             if (!$existe) {
                 try {
                     // Si no existe, crea un nuevo registro
                     $data = [
-                        //  'n_id_u_adscripcion' => $unidad,
+                        'n_id_u_adscripcion' => $unidad,
                         's_desc_area' => $descripcion,
                         's_abrev_area' => $abreviatura,
-                        //  'n_id_cat_area_padre'=>$areaPadre
+                        'n_id_cat_area_padre' => $areaPadre
                     ];
                     $result = CatAreas::create($data);
 
@@ -673,10 +680,10 @@ class CatalogoController extends Controller
                         'mensaje' => 'Se agregó el item satisfactoriamente',
                         'data' => [
                             'id' => $result->n_id_cat_area,
-                            // 'unidadAds' => $result->n_id_u_adscripcion,
+                            'unidadAds' => $result->n_id_u_adscripcion,
                             'descripcion' => $result->s_desc_area,
                             'abreviatura' => $result->s_abrev_area,
-                            // 'areaPadre'=> $result->n_id_cat_area_padre,
+                            'areaPadre' => $result->n_id_cat_area_padre,
                         ]
                     ], 200);
                 } catch (\Illuminate\Database\QueryException $ex) {
@@ -913,9 +920,28 @@ class CatalogoController extends Controller
         if (empty($token)) {
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
         }
+        $response = Http::withHeaders([
+            'Authorization' => $token,
+        ])->post($this->APP_SEGURIDAD.'/api/seguridad/userinfo');
+
+        if ($response->successful()) {
+            $data = $response->json();
+
+            if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
+                $idEmpleado = $data['data']['idEmpleado'];
+                // Continuar con la operación usando $idEmpleado...
+            } else {
+                // Manejar la ausencia de idEmpleado en la respuesta...
+                return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
+            }
+        } else {
+            // Manejar respuesta fallida...
+            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        }
+
         $data = Http::withHeaders([
             'Authorization' => $token,
-        ])->get('http://localhost:8080/api/seguridad/get-menu');
+        ])->get($this->APP_SEGURIDAD.'/api/seguridad/get-menu');
 
         $response = json_decode($data, true);
         $urlBuscada = "/documentos/seguimiento/completados";
@@ -992,7 +1018,7 @@ class CatalogoController extends Controller
             return $catalogo;
         }
         if ($catalogo == "tipo-documento") { //tipo del documento agregar arbol
-            $catalogo = Catalogo::getCatTipoDocumento();
+            $catalogo = Catalogo::getCatTipoDocumento($idEmpleado);
             return $catalogo;
         }
 

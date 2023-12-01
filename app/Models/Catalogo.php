@@ -251,18 +251,37 @@ class Catalogo extends Model
         return $catalogo;
     }
 
-    public static function getCatTipoDocumento()
-    {
-        $catalogo = CatTipoDocumento::with('area')->get()->map(function ($item) {
-            return [
-                'id' => $item->n_id_tipo_documento,
-                'area' => $item->area->s_desc_area,
-                'tipoDocumento' => $item->desc_tipo_documento
 
-            ];
-        });
+
+    public static function getCatTipoDocumento($idEmpleado)
+    {
+
+        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+
+        if (!$empleadoPuesto) {
+            return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+        }
+        $idArea = $empleadoPuesto->n_id_cat_area;
+
+        $catalogo = CatTipoDocumento::whereHas('area', function ($query) use ($idArea) {
+            $query->where('n_id_cat_area', $idArea);
+        })
+            ->with('area')
+            ->get()
+            ->map(function ($item) {
+                $areaDesc = $item->area ? $item->area->s_desc_area : 'No definido';
+
+                $catalogo = [
+                    'id' => $item->n_id_tipo_documento,
+                    'area' => $areaDesc,
+                    'tipoDocumento' => $item->desc_tipo_documento
+                ];
+
+                return $catalogo;
+            });
         return $catalogo;
     }
+
 
     /**----------------- */
 

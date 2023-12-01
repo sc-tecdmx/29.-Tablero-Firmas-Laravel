@@ -130,7 +130,7 @@ class DocumentosController extends Controller
             $transformedFirmantes = $document->firmantes->map(function ($firmante) {
                 return [
                     'numEmpleado' => optional($firmante->empleado)->n_id_num_empleado,
-                    'nombre' => optional($firmante->emplead)->nombre,
+                    'nombre' => optional($firmante->empleado)->nombre,
                     'apellido1' => optional($firmante->empleado)->apellido1,
                     'apellido2' => optional($firmante->empleado)->apellido2,
                     'instruccion' => optional($firmante->instruccion)->desc_instr_firmante,
