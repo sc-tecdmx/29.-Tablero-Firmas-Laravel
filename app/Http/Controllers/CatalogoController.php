@@ -71,6 +71,24 @@ class CatalogoController extends Controller
                 200
             );
         }
+        ///////
+        if ($catalogo == "tipoDoc") {
+            $cat = CatTipoDocumento::find($id);
+            // Verificar si el registro existe
+            if (!$cat) {
+                return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+            }
+            // Eliminar el registro
+            $cat->delete();
+            return response()->json(
+                [
+                    'status' => "OK",
+                    'mensaje' => 'Se eliminó el item satisfactoriamente'
+                ]
+                ,
+                200
+            );
+        }
 
     }
 
@@ -154,6 +172,32 @@ class CatalogoController extends Controller
                         'data' => [
                             'id' => $catEdit->n_id_inst_firmante,
                             'descripcion' => $catEdit->desc_instr_firmante,
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
+            }
+        }
+        //////
+        if ($catalogo == "tipoDoc") {
+            try {
+                $validatedData = $request->validate([
+                    'descripcion' => [Rule::unique('tab_cat_tipo_documento', 'desc_tipo_documento')->ignore($id, 'n_id_tipo_documento')],
+                ]);
+                $catEdit = CatTipoDocumento::findOrFail($id);
+                $catEdit->desc_tipo_documento = $validatedData['descripcion'];
+                $catEdit->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catEdit->n_id_tipo_documento,
+                            'descripcion' => $catEdit->desc_tipo_documento,
                         ]
                     ],
                     200
