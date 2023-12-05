@@ -14,6 +14,8 @@ class CatAreas extends Model
 
     protected $primaryKey = 'n_id_cat_area';
     protected $fillable = ['n_id_cat_area', 'n_id_u_adscripcion', 's_desc_area', 's_abrev_area', 'n_id_cat_area_padre'];
+
+    public $timestamps = false;
     public function adscripcion()
     {
         return $this->belongsTo(CatUAdscripcion::class, 'n_id_u_adscripcion');
@@ -27,6 +29,11 @@ class CatAreas extends Model
     public function empleadosArea()
     {
         return $this->hasMany(EmpleadoPuesto::class, 'n_id_cat_area');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(CatAreas::class, 'n_id_cat_area_padre', 'n_id_cat_area');
     }
 
 }

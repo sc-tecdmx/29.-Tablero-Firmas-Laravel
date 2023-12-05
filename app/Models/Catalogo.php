@@ -30,21 +30,49 @@ use App\Models\Catalogos\CatTipoDocumento;
 class Catalogo extends Model
 {
     use HasFactory;
-
+    //***************Catálogo de áreas en formato de arbol***********************+ */
     public static function getCatAreas()
-    { //adaptar este catalo a estructura de arbol
-        $catalogo = CatAreas::with('adscripcion', 'areaPadre')->get()->map(function ($item) {
-            return [
-                'id' => $item->n_id_cat_area,
-                'unidadAdscripcion' => $item->adscripcion->s_desc_unidad,
-                'areaPadre' => optional($item->areaPadre)->s_desc_area,
-                'area' => $item->s_desc_area,
-                'abreviatura' => $item->s_abrev_area
+    {
+        // Obtenemos todas las áreas con las relaciones necesarias
+        $areas = CatAreas::with('adscripcion', 'areaPadre', 'children')->get();
 
-            ];
-        });
-        return $catalogo;
+        // Construimos el árbol de áreas
+        $tree = self::buildTree($areas, null, false);
+
+        return $tree;
     }
+    //***************Método recursivo que construlle el arbol
+    private static function buildTree($areas, $parentId = null, $isChild = false)
+    {
+        $branch = [];
+
+        foreach ($areas as $area) {
+            if ($area->n_id_cat_area_padre === $parentId) {
+                $children = self::buildTree($areas, $area->n_id_cat_area, true);
+                $node = [
+                    'id' => $area->n_id_cat_area,
+                    'area' => $area->s_desc_area,
+                    'abreviatura' => $area->s_abrev_area
+                ];
+
+                if (!$isChild) {
+                    $node['unidadAdscripcion'] = optional($area->adscripcion)->s_desc_unidad;
+                    $node['AreasHijas'] = $children;
+                } else {
+                    // Para las áreas hijas, solo agregamos 'AreasHijas' si hay hijos
+                    if (!empty($children)) {
+                        $node['AreasHijas'] = $children;
+                    }
+                }
+
+                $branch[] = $node;
+            }
+        }
+
+        return $branch;
+    }
+
+    //***************Termina Catálogo de áreas en formato de arbol***********************+ */
     public static function getNivelModulo()
     {
         $catalogo = CatNivelModulo::all()->map(function ($item) {
@@ -255,7 +283,6 @@ class Catalogo extends Model
 
     public static function getCatTipoDocumento($idEmpleado)
     {
-
         $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
 
         if (!$empleadoPuesto) {
@@ -266,21 +293,22 @@ class Catalogo extends Model
         $catalogo = CatTipoDocumento::whereHas('area', function ($query) use ($idArea) {
             $query->where('n_id_cat_area', $idArea);
         })
+            ->orWhereDoesntHave('area') // Aquí se añade la condición para incluir documentos sin área
             ->with('area')
             ->get()
             ->map(function ($item) {
-                $areaDesc = $item->area ? $item->area->s_desc_area : 'No definido';
+                $areaDesc = $item->area ? $item->area->s_desc_area : 'No definida';
 
-                $catalogo = [
+                return [
                     'id' => $item->n_id_tipo_documento,
                     'area' => $areaDesc,
                     'tipoDocumento' => $item->desc_tipo_documento
                 ];
-
-                return $catalogo;
             });
+
         return $catalogo;
     }
+
 
 
     /**----------------- */

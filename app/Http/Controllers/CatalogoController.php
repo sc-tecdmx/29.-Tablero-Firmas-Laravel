@@ -6,6 +6,7 @@ use App\Models\Catalogos\CatExpedientes;
 use App\Models\Catalogos\CatInstruccionDest;
 use App\Models\Catalogos\CatInstruccionDoc;
 use App\Models\Catalogos\CatNivelModulo;
+use App\Models\EmpleadoPuesto;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
@@ -171,15 +172,29 @@ class CatalogoController extends Controller
         if (empty($token)) {
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
         }
-        $data = Http::withHeaders([
+        $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->get($this->APP_SEGURIDAD.'/api/seguridad/userinfo');
+        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
 
-        $response = json_decode($data, true);
-        if (isset($response['data']) && isset($response['data']['idUsuario'])) {
-            $idUsuario = $response['data']['idUsuario'];
+        if ($response->successful()) {
+            $data = $response->json();
+
+            if (isset($data['data']) && isset($data['data']['idUsuario'])) {
+                $idUsuario = $data['data']['idUsuario'];
+            } else {
+                $idUsuario = null;
+            }
+
+            if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
+                $idEmpleado = $data['data']['idEmpleado'];
+                // Continuar con la operación usando $idEmpleado...
+            } else {
+                // Manejar la ausencia de idEmpleado en la respuesta...
+                return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
+            }
         } else {
-            $idUsuario = null;
+            // Manejar respuesta fallida...
+            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
         }
         ////////////////////
         if ($catalogo == "sexo") {
@@ -531,8 +546,16 @@ class CatalogoController extends Controller
         }
         ////
         if ($catalogo == "tipoDoc") {
+
+            $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+
+            if (!$empleadoPuesto) {
+                return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+            }
+            $idArea = $empleadoPuesto->n_id_cat_area;
+
             $descripcion = $request->get('descripcion');
-            $areaId = $request->get('areaId');
+            $areaId = $idArea;
 
             // Verificar si ya existe un registro con esa descripción
             $existe = CatTipoDocumento::where('desc_tipo_documento', $descripcion)
@@ -661,9 +684,13 @@ class CatalogoController extends Controller
             $areaPadre = $request->get('idAreaPadre');
 
             // Verificar si ya existe un registro con esa descripción
-            $existe = CatAreas::where('s_desc_area', $descripcion)
-                ->first();
+            $query = CatAreas::where('s_desc_area', $descripcion);
+          /*  if ($areaPadre !== null) {
+                // Si se proporcionó un área padre, inclúyela en la consulta
+                $query->where('n_id_cat_area_padre', $areaPadre);
+            }*/
 
+            $existe = $query->first();
             if (!$existe) {
                 try {
                     // Si no existe, crea un nuevo registro
@@ -690,7 +717,7 @@ class CatalogoController extends Controller
                     // Manejar la excepción si se produce una violación de la restricción de integridad
                     return response()->json([
                         'status' => "Error",
-                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                        'mensaje' => 'Error al intentar crear el registro.'.$ex,
                     ], 409);
                 }
             } else {
@@ -864,7 +891,7 @@ class CatalogoController extends Controller
         }
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD.'/api/seguridad/userinfo');
+        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
 
         if ($response->successful()) {
             $data = $response->json();
@@ -939,7 +966,7 @@ class CatalogoController extends Controller
         }
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD.'/api/seguridad/userinfo');
+        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
 
         if ($response->successful()) {
             $data = $response->json();
@@ -958,7 +985,7 @@ class CatalogoController extends Controller
 
         $data = Http::withHeaders([
             'Authorization' => $token,
-        ])->get($this->APP_SEGURIDAD.'/api/seguridad/get-menu');
+        ])->get($this->APP_SEGURIDAD . '/api/seguridad/get-menu');
 
         $response = json_decode($data, true);
         $urlBuscada = "/documentos/seguimiento/completados";
