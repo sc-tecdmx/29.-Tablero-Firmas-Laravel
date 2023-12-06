@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GruposController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VersionController;
@@ -42,6 +43,15 @@ Route::delete('eliminar-item-catalogo/{catalogo}/{id}', [CatalogoController::cla
 
 Route::get('get-catalogo-pantalla/{pantalla}', [CatalogoController::class, 'getCatalogoPantalla']);
 
+// Grupos
+Route::post('grupos/agregar-grupo', [GruposController::class, 'crearGrupo']);
+
+Route::get('grupos/{tipoGrupo}', [GruposController::class, 'consultarGrupos']);
+
+Route::put('grupos/editar-grupo/{idGrupo}', [GruposController::class, 'editarGrupo']);
+
+Route::delete('grupos/eliminar-grupo/{idGrupo}', [GruposController::class, 'eliminarGrupo']);
+
 //Documentos
 
 Route::get('documentos-usuario/{userId}', [DocumentosController::class, 'getDocumentsByUser']);
@@ -55,4 +65,5 @@ Route::get('/autocompletado', [CatalogoController::class, 'autocompletado']);
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works']);
+//no agregar ninguna ruta despues de este , por que no se ejecutará  **
 });

@@ -5,7 +5,6 @@ namespace App\Models;
 
 use App\Models\Catalogos\CatEmpleados;
 use App\Models\Catalogos\CatInstruccion;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Firmantes extends Model

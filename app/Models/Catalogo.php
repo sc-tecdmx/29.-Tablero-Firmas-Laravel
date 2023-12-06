@@ -330,4 +330,5 @@ class Catalogo extends Model
         return null;
     }
 }
+
 //Privacidad y seguridad, Apariencia, Documentos, Mis Documentos, Faltantes
