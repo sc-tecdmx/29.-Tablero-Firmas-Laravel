@@ -1010,8 +1010,8 @@ class CatalogoController extends Controller
         }
         $response = Http::withHeaders([
             'Authorization' => $token,
-        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-        ])->post('http://localhost:8080/api/seguridad/userinfo');
+        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post('http://localhost:8080/api/seguridad/userinfo');
 
         if ($response->successful()) {
             $data = $response->json();
