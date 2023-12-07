@@ -218,8 +218,9 @@ class CatalogoController extends Controller
         }
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-
+        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
+        //])->post('http://localhost:8080/api/seguridad/userinfo');
         if ($response->successful()) {
             $data = $response->json();
 
@@ -935,7 +936,9 @@ class CatalogoController extends Controller
         }
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
+        //])->post('http://localhost:8080/api/seguridad/userinfo');
 
         if ($response->successful()) {
             $data = $response->json();
@@ -1010,9 +1013,9 @@ class CatalogoController extends Controller
         }
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
         //])->post('http://localhost:8080/api/seguridad/userinfo');
-
         if ($response->successful()) {
             $data = $response->json();
 
@@ -1030,8 +1033,9 @@ class CatalogoController extends Controller
 
         $data = Http::withHeaders([
             'Authorization' => $token,
-        ])->get($this->APP_SEGURIDAD . '/api/seguridad/get-menu');
+        //])->get($this->APP_SEGURIDAD . '/api/seguridad/get-menu');
         //])->get('http://localhost:8080/api/seguridad/get-menu');
+        ])->get('http://localhost:8080/firma-seguridad/api/seguridad/get-menu');
 
         $response = json_decode($data, true);
         $urlBuscada = "/documentos/seguimiento/completados";

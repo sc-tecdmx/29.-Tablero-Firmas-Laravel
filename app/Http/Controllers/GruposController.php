@@ -31,7 +31,8 @@ class GruposController extends Controller
         //extraccion de datos del token
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
         //])->post('http://localhost:8080/api/seguridad/userinfo');
 
         if (!$response->successful()) {
@@ -118,9 +119,9 @@ class GruposController extends Controller
         //extraccion de datos del token
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
         //])->post('http://localhost:8080/api/seguridad/userinfo');
-
 
         if (!$response->successful()) {
             return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
@@ -182,7 +183,8 @@ class GruposController extends Controller
         //extraccion de datos del token
         $response = Http::withHeaders([
             'Authorization' => $token,
-        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
         //])->post('http://localhost:8080/api/seguridad/userinfo');
 
 
