@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Catalogos\CatAreas;
+use App\Models\Catalogos\CatInstruccion;
 use Illuminate\Database\Eloquent\Model;
 
 class GrupoFirma extends Model

@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Catalogo;
+use App\Models\EmpleadoPuesto;
+use Illuminate\Support\Facades\Http;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -11,6 +12,7 @@ use App\Models\GrupoFirmaPersonas;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class GruposController extends Controller
 {
@@ -26,12 +28,43 @@ class GruposController extends Controller
         if (empty($token)) {
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
         }
+        //extraccion de datos del token
+        $response = Http::withHeaders([
+            'Authorization' => $token,
+        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post('http://localhost:8080/api/seguridad/userinfo');
+
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        }
+
+        $data = $response->json()['data'] ?? null;
+        $idUsuario = $data['idUsuario'] ?? null;
+        $idEmpleado = $data['idEmpleado'] ?? null;
+
+        if (!$idEmpleado) {
+            return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
+        }
+
+        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+
+        if (!$empleadoPuesto) {
+            return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+        }
+        $idArea = $empleadoPuesto->n_id_cat_area;
+        //////////////////
 
         // Validación de la solicitud
         $validator = Validator::make($request->all(), [
-            'idArea' => 'required|integer',
             'tipoGrupo' => 'required|string|max:20',
-            'nombreGrupo' => 'required|string|max:50|unique:tab_doc_grupos_firmas,s_nombre_gpo_firmante',
+            'nombreGrupo' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('tab_doc_grupos_firmas', 's_nombre_gpo_firmante')->where(function ($query) use ($idArea) {
+                    return $query->where('n_id_cat_area', $idArea);
+                }),
+            ],
             'personas' => 'required|array',
             'personas.*.idEmpleado' => 'required|integer',
             'personas.*.idInstFirmante' => 'nullable|integer',
@@ -48,7 +81,7 @@ class GruposController extends Controller
 
             // Crear un nuevo grupo
             $grupo = GrupoFirma::create([
-                'n_id_cat_area' => $request->idArea,
+                'n_id_cat_area' => $idArea,
                 'c_tipo_grupo' => $request->tipoGrupo,
                 's_nombre_gpo_firmante' => $request->nombreGrupo,
             ]);
@@ -82,22 +115,56 @@ class GruposController extends Controller
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
         }
 
-        $grupos = GrupoFirma::with(['personas.empleado', 'area'])
-            ->where('c_tipo_grupo', $tipoGrupo)
-            ->get();
+        //extraccion de datos del token
+        $response = Http::withHeaders([
+            'Authorization' => $token,
+        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post('http://localhost:8080/api/seguridad/userinfo');
 
-        $gruposTransformados = $grupos->map(function ($grupo) {
+
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        }
+
+        $data = $response->json()['data'] ?? null;
+        $idUsuario = $data['idUsuario'] ?? null;
+        $idEmpleado = $data['idEmpleado'] ?? null;
+
+        if (!$idEmpleado) {
+            return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
+        }
+
+        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+
+        if (!$empleadoPuesto) {
+            return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+        }
+        $idArea = $empleadoPuesto->n_id_cat_area;
+
+        $grupos = GrupoFirma::with([
+            'personas.empleado',
+            'personas.instruccionFirmante',
+            'personas.instruccionDestinatario',
+            'area'
+        ])->where('c_tipo_grupo', $tipoGrupo)->whereHas('area', function ($query) use ($idArea) {
+            $query->where('n_id_cat_area', $idArea);
+        })->get();
+
+        $gruposTransformados = $grupos->map(function ($grupo) use ($tipoGrupo) {
             return [
                 'id' => $grupo->n_id_grupo_firmas,
                 'nombreGrupo' => $grupo->s_nombre_gpo_firmante,
                 'area' => $grupo->area->s_desc_area,
-                'personas' => $grupo->personas->map(function ($persona) {
+                'personas' => $grupo->personas->map(function ($persona) use ($tipoGrupo) {
+                    $instruccion = $tipoGrupo == 'Firmantes'
+                        ? $persona->instruccionFirmante->desc_instr_firmante ?? null
+                        : $persona->instruccionDestinatario->desc_inst_dest ?? null;
                     return [
                         'idEmpleado' => $persona->n_id_num_empleado,
                         'nombre' => $persona->empleado->nombre,
                         'apellido1' => $persona->empleado->apellido1,
                         'apellido2' => $persona->empleado->apellido2,
-                        // Agrega más campos si es necesario
+                        'instruccion' => $instruccion
                     ];
                 }),
             ];
@@ -112,11 +179,41 @@ class GruposController extends Controller
         if (empty($token)) {
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
         }
+        //extraccion de datos del token
+        $response = Http::withHeaders([
+            'Authorization' => $token,
+        ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+        //])->post('http://localhost:8080/api/seguridad/userinfo');
 
+
+        if (!$response->successful()) {
+            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        }
+
+        $data = $response->json()['data'] ?? null;
+        $idUsuario = $data['idUsuario'] ?? null;
+        $idEmpleado = $data['idEmpleado'] ?? null;
+
+        if (!$idEmpleado) {
+            return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
+        }
+
+        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+
+        if (!$empleadoPuesto) {
+            return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+        }
+        $idArea = $empleadoPuesto->n_id_cat_area;
         // Validar la solicitud
         $validatedData = $request->validate([
-            'idArea' => 'required|integer',
-            'nombreGrupo' => 'required|string|max:50|unique:tab_doc_grupos_firmas,s_nombre_gpo_firmante',
+            'nombreGrupo' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('tab_doc_grupos_firmas', 's_nombre_gpo_firmante')
+                    ->where('n_id_cat_area', $idArea)
+                    ->ignore($request->input('idGrupo')), // Asume que 'idGrupo' es el ID del grupo que se está editando
+            ],
             'personas' => 'required|array',
             'personas.*.idEmpleado' => 'required|integer',
             'personas.*.idInstFirmante' => 'nullable|integer',
@@ -128,16 +225,19 @@ class GruposController extends Controller
 
             // Buscar y actualizar el grupo
             $grupo = GrupoFirma::findOrFail($idGrupo);
-            $grupo->n_id_cat_area = $validatedData['idArea'];
+            $grupo->n_id_cat_area = $idArea;
             $grupo->s_nombre_gpo_firmante = $validatedData['nombreGrupo'];
             $grupo->save();
 
             // Actualizar o añadir personas
             foreach ($validatedData['personas'] as $personaData) {
                 GrupoFirmaPersonas::updateOrCreate(
-                    ['n_id_grupo_personas' => $idGrupo, 'n_id_num_empleado' => $personaData['idEmpleado']],
-                    ['n_id_inst_firmante' => $personaData['idInstFirmante'],
-                    'n_id_inst_destinatario' => $personaData['idInstDest']]
+                    ['n_id_grupo_personas' => $idGrupo,
+                     'n_id_num_empleado' => $personaData['idEmpleado']],
+                    [
+                        'n_id_inst_firmante' => $personaData['idInstFirmante'],
+                        'n_id_inst_destinatario' => $personaData['idInstDest']
+                    ]
                 );
             }
 
@@ -154,8 +254,7 @@ class GruposController extends Controller
         $token = $request->header('Authorization');
         if (empty($token)) {
             return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
-        }
-        {
+        } {
             try {
                 DB::beginTransaction();
 
