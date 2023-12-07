@@ -1030,8 +1030,8 @@ class CatalogoController extends Controller
 
         $data = Http::withHeaders([
             'Authorization' => $token,
-       // ])->get($this->APP_SEGURIDAD . '/api/seguridad/get-menu');
-        ])->get('http://localhost:8080/api/seguridad/get-menu');
+        ])->get($this->APP_SEGURIDAD . '/api/seguridad/get-menu');
+        //])->get('http://localhost:8080/api/seguridad/get-menu');
 
         $response = json_decode($data, true);
         $urlBuscada = "/documentos/seguimiento/completados";
