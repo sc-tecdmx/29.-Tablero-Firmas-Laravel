@@ -37,12 +37,12 @@ class Catalogo extends Model
         $areas = CatAreas::with('adscripcion', 'areaPadre', 'children')->get();
 
         // Construimos el árbol de áreas
-        $tree = self::buildTree($areas, null, false);
+        $tree = self::buildTree($areas, 1, false);
 
         return $tree;
     }
     //***************Método recursivo que construlle el arbol
-    private static function buildTree($areas, $parentId = null, $isChild = false)
+    private static function buildTree($areas, $parentId = 1, $isChild = false)
     {
         $branch = [];
 
