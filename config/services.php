@@ -31,4 +31,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'seguridad' => [
+        'url' => env('APP_URL_SEGURIDAD'),
+    ],
+
+    'env' => [
+        'config' => env('APP_ENV'),
+    ],
+
 ];

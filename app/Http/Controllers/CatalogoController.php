@@ -37,16 +37,51 @@ use App\CatalogoDTO;
 class CatalogoController extends Controller
 {
     public $APP_SEGURIDAD;
+    public $APP_ENV;
     public function __construct()
     {
-        $this->APP_SEGURIDAD = env('APP_URL_SEGURIDAD');
+        $this->APP_SEGURIDAD = config('services.seguridad.url');
+        $this->APP_ENV = config('services.env.config');
+    }
+
+    public function hasPermission(Request $request){
+        $user = new \stdClass();
+        $user->idEmpleado = null;
+        $user->idUsuario = null;
+        $user->error_msj = null;
+        $user->token = null;
+
+        $header_name = $this->APP_ENV=='prod'?'bearertoken':'Authorization';
+        $token = $request->header($header_name);
+        if (!empty($token)) {
+            $header_request_name = $this->APP_ENV=='prod'?'Bearer ':'';
+            $user->token = $header_request_name.$token;
+
+            $response = Http::withHeaders([
+                'Authorization' => $user->token,
+            ])->post($this->APP_SEGURIDAD. '/api/seguridad/userinfo');
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
+                    $user->idEmpleado = $data['data']['idEmpleado'];
+                    $user->idUsuario = $data['data']['idUsuario'];
+                } else {
+                    $user->error_msj = 'idEmpleado no está presente en la respuesta';
+                }
+            } else {
+                $user->error_msj = 'Error al comunicarse con el servicio de userinfo: '.$response->status();
+            }
+        }
+        return $user;
     }
 
     public function eliminarItemCatalogo($catalogo, $id, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
+
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
 
         if ($catalogo == "sexo") {
@@ -94,9 +129,9 @@ class CatalogoController extends Controller
 
     public function editarItemCatalogo($catalogo, $id, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
         //////
         if ($catalogo == "sexo") {
@@ -212,35 +247,11 @@ class CatalogoController extends Controller
 
     public function agregarItemCatalogo($catalogo, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
-        $response = Http::withHeaders([
-            'Authorization' => $token,
-        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
-        //])->post('http://localhost:8080/api/seguridad/userinfo');
-        if ($response->successful()) {
-            $data = $response->json();
 
-            if (isset($data['data']) && isset($data['data']['idUsuario'])) {
-                $idUsuario = $data['data']['idUsuario'];
-            } else {
-                $idUsuario = null;
-            }
-
-            if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
-                $idEmpleado = $data['data']['idEmpleado'];
-                // Continuar con la operación usando $idEmpleado...
-            } else {
-                // Manejar la ausencia de idEmpleado en la respuesta...
-                return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
-            }
-        } else {
-            // Manejar respuesta fallida...
-            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
-        }
         ////////////////////
         if ($catalogo == "sexo") {
             $abreviatura = $request->get('abreviatura');
@@ -290,7 +301,7 @@ class CatalogoController extends Controller
                     $data = [
                         's_num_expediente' => $numExpediente,
                         's_descripcion' => $descripcion,
-                        'n_id_usuario_creador' => $idUsuario
+                        'n_id_usuario_creador' => $user->idUsuario
                     ];
                     $result = CatExpedientes::create($data);
 
@@ -592,10 +603,10 @@ class CatalogoController extends Controller
         ////
         if ($catalogo == "tipoDoc") {
 
-            $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+            $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $user->idEmpleado)->first();
 
             if (!$empleadoPuesto) {
-                return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+                return response()->json(['message' => 'Empleado no encontrado ' . $user->idEmpleado], 404);
             }
             $idArea = $empleadoPuesto->n_id_cat_area;
 
@@ -930,33 +941,14 @@ class CatalogoController extends Controller
 
     public function getCatalogoPantalla($pantalla, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
-        $response = Http::withHeaders([
-            'Authorization' => $token,
-        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
-        //])->post('http://localhost:8080/api/seguridad/userinfo');
 
-        if ($response->successful()) {
-            $data = $response->json();
-
-            if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
-                $idEmpleado = $data['data']['idEmpleado'];
-                // Continuar con la operación usando $idEmpleado...
-            } else {
-                // Manejar la ausencia de idEmpleado en la respuesta...
-                return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
-            }
-        } else {
-            // Manejar respuesta fallida...
-            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
-        }
         if ($pantalla == 'nuevo-documento') {
             $catDestino = Catalogo::getCatDestino();
-            $catTipoDocumento = Catalogo::getCatTipoDocumento($idEmpleado);
+            $catTipoDocumento = Catalogo::getCatTipoDocumento($user->idEmpleado);
             $catInstruccionFirmantes = Catalogo::getCatInstruccion();
             $catInstruccionDestinatarios = Catalogo::getCatInstruccionDest();
             $catTipoFirma = Catalogo::getCatTipoFirma();
@@ -1007,35 +999,14 @@ class CatalogoController extends Controller
 
     public function getCatalogo($catalogo, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
-        }
-        $response = Http::withHeaders([
-            'Authorization' => $token,
-        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
-        //])->post('http://localhost:8080/api/seguridad/userinfo');
-        if ($response->successful()) {
-            $data = $response->json();
-
-            if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
-                $idEmpleado = $data['data']['idEmpleado'];
-                // Continuar con la operación usando $idEmpleado...
-            } else {
-                // Manejar la ausencia de idEmpleado en la respuesta...
-                return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
-            }
-        } else {
-            // Manejar respuesta fallida...
-            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
 
         $data = Http::withHeaders([
-            'Authorization' => $token,
-        //])->get($this->APP_SEGURIDAD . '/api/seguridad/get-menu');
-        //])->get('http://localhost:8080/api/seguridad/get-menu');
-        ])->get('http://localhost:8080/firma-seguridad/api/seguridad/get-menu');
+            'Authorization' => $user->token,
+        ])->get($this->APP_SEGURIDAD . '/api/seguridad/get-menu');
 
         $response = json_decode($data, true);
         $urlBuscada = "/documentos/seguimiento/completados";
@@ -1112,10 +1083,9 @@ class CatalogoController extends Controller
             return $catalogo;
         }
         if ($catalogo == "tipo-documento") { //tipo del documento agregar arbol
-            $catalogo = Catalogo::getCatTipoDocumento($idEmpleado);
+            $catalogo = Catalogo::getCatTipoDocumento($user->idEmpleado);
             return $catalogo;
         }
-
         return null;
     }
 

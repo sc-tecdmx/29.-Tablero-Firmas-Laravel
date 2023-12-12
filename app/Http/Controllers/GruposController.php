@@ -17,40 +17,57 @@ use Illuminate\Validation\Rule;
 class GruposController extends Controller
 {
     public $APP_SEGURIDAD;
+    public $APP_ENV;
     public function __construct()
     {
-        $this->APP_SEGURIDAD = env('APP_URL_SEGURIDAD');
+        $this->APP_SEGURIDAD = config('services.seguridad.url');
+        $this->APP_ENV = config('services.env.config');
+    }
+
+    public function hasPermission(Request $request){
+        $user = new \stdClass();
+        $user->idEmpleado = null;
+        $user->idUsuario = null;
+        $user->error_msj = null;
+        $user->token = null;
+
+        $header_name = $this->APP_ENV=='prod'?'bearertoken':'Authorization';
+        $token = $request->header($header_name);
+        if (!empty($token)) {
+            $header_request_name = $this->APP_ENV=='prod'?'Bearer ':'';
+            $user->token = $header_request_name.$token;
+
+            $response = Http::withHeaders([
+                'Authorization' => $user->token,
+            ])->post($this->APP_SEGURIDAD. '/api/seguridad/userinfo');
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
+                    $user->idEmpleado = $data['data']['idEmpleado'];
+                    $user->idUsuario = $data['data']['idUsuario'];
+                } else {
+                    $user->error_msj = 'idEmpleado no está presente en la respuesta';
+                }
+            } else {
+                $user->error_msj = 'Error al comunicarse con el servicio de userinfo: '.$response->status();
+            }
+        }
+        return $user;
     }
 
     public function crearGrupo(Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
-        }
-        //extraccion de datos del token
-        $response = Http::withHeaders([
-            'Authorization' => $token,
-        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
-        //])->post('http://localhost:8080/api/seguridad/userinfo');
 
-        if (!$response->successful()) {
-            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
 
-        $data = $response->json()['data'] ?? null;
-        $idUsuario = $data['idUsuario'] ?? null;
-        $idEmpleado = $data['idEmpleado'] ?? null;
-
-        if (!$idEmpleado) {
-            return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
-        }
-
-        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $user->idEmpleado)->first();
 
         if (!$empleadoPuesto) {
-            return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+            return response()->json(['message' => 'Empleado no encontrado ' . $user->idEmpleado], 404);
         }
         $idArea = $empleadoPuesto->n_id_cat_area;
         //////////////////
@@ -111,34 +128,15 @@ class GruposController extends Controller
 
     public function consultarGrupos($tipoGrupo, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
 
-        //extraccion de datos del token
-        $response = Http::withHeaders([
-            'Authorization' => $token,
-        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
-        //])->post('http://localhost:8080/api/seguridad/userinfo');
-
-        if (!$response->successful()) {
-            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
-        }
-
-        $data = $response->json()['data'] ?? null;
-        $idUsuario = $data['idUsuario'] ?? null;
-        $idEmpleado = $data['idEmpleado'] ?? null;
-
-        if (!$idEmpleado) {
-            return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
-        }
-
-        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $user->idEmpleado)->first();
 
         if (!$empleadoPuesto) {
-            return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+            return response()->json(['message' => 'Empleado no encontrado ' . $user->idEmpleado], 404);
         }
         $idArea = $empleadoPuesto->n_id_cat_area;
 
@@ -176,34 +174,15 @@ class GruposController extends Controller
 
     public function editarGrupo($idGrupo, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
-        }
-        //extraccion de datos del token
-        $response = Http::withHeaders([
-            'Authorization' => $token,
-        //])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
-        ])->post('http://localhost:8080/firma-seguridad/api/seguridad/userinfo');
-        //])->post('http://localhost:8080/api/seguridad/userinfo');
-
-
-        if (!$response->successful()) {
-            return response()->json(['message' => 'Error al comunicarse con el servicio de userinfo'], $response->status());
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
         }
 
-        $data = $response->json()['data'] ?? null;
-        $idUsuario = $data['idUsuario'] ?? null;
-        $idEmpleado = $data['idEmpleado'] ?? null;
-
-        if (!$idEmpleado) {
-            return response()->json(['message' => 'idEmpleado no está presente en la respuesta'], 404);
-        }
-
-        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
+        $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $user->idEmpleado)->first();
 
         if (!$empleadoPuesto) {
-            return response()->json(['message' => 'Empleado no encontrado ' . $idEmpleado], 404);
+            return response()->json(['message' => 'Empleado no encontrado ' . $user->idEmpleado], 404);
         }
         $idArea = $empleadoPuesto->n_id_cat_area;
         // Validar la solicitud
@@ -253,26 +232,26 @@ class GruposController extends Controller
 
     public function eliminarGrupo($idGrupo, Request $request)
     {
-        $token = $request->header('Authorization');
-        if (empty($token)) {
-            return response()->json(['message' => 'No cuenta con permisos para realizar esta operación'], 400);
-        } {
-            try {
-                DB::beginTransaction();
+        $user = $this->hasPermission($request);
+        if (empty($user->idEmpleado)) {
+            return response()->json(['message' => $user->error_msj], 400);
+        }
 
-                // Eliminar personas asociadas al grupo
-                GrupoFirmaPersonas::where('n_id_grupo_personas', $idGrupo)->delete();
+        try {
+            DB::beginTransaction();
 
-                // Eliminar el grupo
-                $grupo = GrupoFirma::findOrFail($idGrupo);
-                $grupo->delete();
+            // Eliminar personas asociadas al grupo
+            GrupoFirmaPersonas::where('n_id_grupo_personas', $idGrupo)->delete();
 
-                DB::commit();
-                return response()->json(['message' => 'Grupo y personas eliminados con éxito']);
-            } catch (Exception $e) {
-                DB::rollBack();
-                return response()->json(['error' => $e->getMessage()], 500);
-            }
+            // Eliminar el grupo
+            $grupo = GrupoFirma::findOrFail($idGrupo);
+            $grupo->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'Grupo y personas eliminados con éxito']);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }
