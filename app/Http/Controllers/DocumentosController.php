@@ -2,12 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DocumentoWorkflow;
+use App\Models\DocumentosDestinatarios;
+use App\Models\DocumentosFirmantesPki;
 use Illuminate\Http\Request;
 use App\Models\Documentos;
 
+
+use Illuminate\Support\Facades\Http;
+
 class DocumentosController extends Controller
 {
+    public $APP_SEGURIDAD;
+    public $APP_ENV;
+    public function __construct()
+    {
+        $this->APP_SEGURIDAD = config('services.seguridad.url');
+        $this->APP_ENV = config('services.env.config');
+    }
+
+    public function hasPermission(Request $request)
+    {
+        $user = new \stdClass();
+        $user->idEmpleado = null;
+        $user->idUsuario = null;
+        $user->error_msj = null;
+        $user->token = null;
+
+        $header_name = $this->APP_ENV == 'prod' ? 'bearertoken' : 'Authorization';
+        $token = $request->header($header_name);
+        if (!empty($token)) {
+            $header_request_name = $this->APP_ENV == 'prod' ? 'Bearer ' : '';
+            $user->token = $header_request_name . $token;
+
+            $response = Http::withHeaders([
+                'Authorization' => $user->token,
+            ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
+                    $user->idEmpleado = $data['data']['idEmpleado'];
+                    $user->idUsuario = $data['data']['idUsuario'];
+                } else {
+                    $user->error_msj = 'idEmpleado no está presente en la respuesta';
+                }
+            } else {
+                $user->error_msj = 'Error al comunicarse con el servicio de userinfo: ' . $response->status();
+            }
+        }
+        return $user;
+    }
     public function getDocumentsByQuery(Request $request)
     {
         $query = $request->input('query');
@@ -100,9 +144,14 @@ class DocumentosController extends Controller
         return response()->json($userDocuments);
     }
 
-    public function getDocumentsByDocumentId($documentoId)
+    public function getDocumentsByDocumentId($documentoId, Request $request)
     {
+        $user = $this->hasPermission($request);
+        if (empty($user->idUsuario)) {
+            return response()->json(['message' => $user->error_msj], 400);
+        }
         // Utilizando 'with' para precargar las relaciones y encontrar el documento por su clave primaria
+
         $document = Documentos::with([
             'destino',
             'tipoDocumento',
@@ -160,8 +209,41 @@ class DocumentosController extends Controller
                     'documentoPath' => optional($adjunto)->documento_path,
                     'docBase64' => optional($adjunto)->documento_base64,
                     'fileType' => optional($adjunto)->documento_filetype,
+                    'hash' => optional($adjunto)->documento_hash,
                 ];
             });
+            $statusFirma = false;
+            //aqui recorro mi lista de docsAdjuntos y obtengo el hash de los documentos
+            foreach ($transformedDocumentosAdjuntos as $adjunto) {
+                $hash = $adjunto['hash'];
+                $idUsuario = $user->idUsuario;
+
+                // Busca en la tabla pki_documento_firmantes por hash y num_empleado
+                $documentoFirmantes = DocumentosFirmantesPki::where('s_hash_documento', $hash)
+                    ->where('n_id_usuario', $idUsuario)
+                    ->first();
+
+                // Busca en la tabla pki_documento_destinatario por hash y num_empleado
+                $documentoDestinatario = DocumentosDestinatarios::where('s_hash_documento', $hash)
+                    ->where('n_id_usuario', $idUsuario)
+                    ->first();
+                // Verificar si id_firma_aplicada tiene algún valor en firmantes
+                if ($documentoFirmantes !== null) {
+                    if ($documentoFirmantes->id_firma_aplicada !== null) {
+                        // id_firma_aplicada tiene un valor
+                        $statusFirma = true;
+                    }
+
+                }
+                // Verificar si id_firma_aplicada tiene algún valor en destinatarios
+                if ($documentoDestinatario !== null) {
+                    if ($documentoDestinatario->id_firma_aplicada !== null) {
+                        // id_firma_aplicada tiene un valor
+                        $statusFirma = true;
+                    }
+
+                }
+            }
 
             // Construir la respuesta
             $renamedDocument = [
@@ -176,7 +258,8 @@ class DocumentosController extends Controller
                 'apellido2Empleado' => optional($document->empleado)->apellido2,
                 'numExpediente' => optional($document->expediente)->s_num_expediente,
                 'expedienteDes' => optional($document->expediente)->s_descripcion,
-                'etapaDocumento'=>  optional($document->workflowUltimaEtapa->etapaDocumento)->s_desc_etapa,
+                'etapaDocumento' => optional($document->workflowUltimaEtapa->etapaDocumento)->s_desc_etapa,
+                'statusFirma' => $statusFirma,
                 'prioridad' => optional($document->prioridad)->desc_prioridad,
                 'asunto' => optional($document)->s_asunto,
                 'contenido' => optional($document)->s_contenido,
