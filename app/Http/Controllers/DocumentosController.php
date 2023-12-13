@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DocumentoWorkflow;
 use Illuminate\Http\Request;
 use App\Models\Documentos;
 
@@ -117,7 +118,8 @@ class DocumentosController extends Controller
             'destinatarios.empleadoPuesto.area',
             'destinatarios.empleadoPuesto.puesto',
             'documentosAdjuntos',
-            'docConfiguracion.configuracion'
+            'docConfiguracion.configuracion',
+            'workflowUltimaEtapa.etapaDocumento'
         ])->find($documentoId);
 
         if ($document) {
@@ -174,6 +176,7 @@ class DocumentosController extends Controller
                 'apellido2Empleado' => optional($document->empleado)->apellido2,
                 'numExpediente' => optional($document->expediente)->s_num_expediente,
                 'expedienteDes' => optional($document->expediente)->s_descripcion,
+                'etapaDocumento'=>  optional($document->workflowUltimaEtapa->etapaDocumento)->s_desc_etapa,
                 'prioridad' => optional($document->prioridad)->desc_prioridad,
                 'asunto' => optional($document)->s_asunto,
                 'contenido' => optional($document)->s_contenido,
@@ -184,6 +187,7 @@ class DocumentosController extends Controller
                 'firmantes' => $transformedFirmantes,
                 'destinatarios' => $transformedDestinatarios,
                 'documentosAdjuntos' => $transformedDocumentosAdjuntos
+
             ];
             return response()->json($renamedDocument);
         } else {

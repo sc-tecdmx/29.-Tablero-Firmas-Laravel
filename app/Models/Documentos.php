@@ -79,5 +79,10 @@ class Documentos extends Model
     {
         return $this->hasMany(DocumentoAdjunto::class, 'id_document', 'n_id_documento');
     }
+    public function workflowUltimaEtapa()
+    {
+        return $this->hasOne(DocumentoWorkflow::class, 'id_document', 'n_id_documento')
+                    ->latest('ult_actualizacion');
+    }
 
 }
