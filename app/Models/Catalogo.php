@@ -187,7 +187,11 @@ class Catalogo extends Model
 
     public static function getCatEmpleados()
     {
-        $catalogo = CatEmpleados::with('sexo', 'empleadoPuesto.puesto', 'empleadoPuesto.area')->get()->map(function ($item) {
+        $catalogo = CatEmpleados::with('sexo', 'empleadoPuesto.puesto', 'empleadoPuesto.area')
+        ->orderBy('nombre', 'asc')
+        ->orderBy('apellido1', 'asc')
+        ->orderBy('apellido2', 'asc')
+        ->get()->map(function ($item) {
             return [
                 'id' => $item->n_id_num_empleado,
                 'nombre' => $item->nombre,
@@ -278,9 +282,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
-
-
     public static function getCatTipoDocumento($idEmpleado)
     {
         $empleadoPuesto = EmpleadoPuesto::where('n_id_num_empleado', $idEmpleado)->first();
@@ -309,7 +310,32 @@ class Catalogo extends Model
         return $catalogo;
     }
 
+    public static function getEmpleadoPuesto()
+    {
+        $empleadoPuesto = EmpleadoPuesto::with([
+            'empleado', // Relación con CatEmpleados
+            'puesto', // Relación con CatPuesto
+            'area.adscripcion' // Relación con CatAreas y luego con CatUAdscripcion
+        ])->get();
 
+        // Transformando los resultados para incluir la información deseada
+        $empleadosPuesto = $empleadoPuesto->map(function ($item) {
+            return [
+                "id"=>$item->n_id_empleado_puesto,
+                'empleado' => $item->empleado->nombre,
+                'apellido1'=>$item->empleado->apellido1,
+                'apellido2'=>$item->empleado->apellido2,
+                'unidadA' => optional($item->area->adscripcion)->s_desc_unidad,
+                'area' => optional($item->area)->s_desc_area,
+                'puesto' => optional($item->puesto)->s_desc_nombramiento,
+                'fechaAlta' => optional($item)->fecha_alta,
+                'fechaConclusion' => optional($item)->fecha_conclusion
+            ];
+        });
+
+        // Devolviendo la respuesta como JSON
+        return response()->json($empleadosPuesto);
+    }
 
     /**----------------- */
 

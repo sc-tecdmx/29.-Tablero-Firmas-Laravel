@@ -11,5 +11,6 @@ class CatInstruccionDest extends Model
 
     protected $table = 'tab_cat_inst_dest';
     public $timestamps = false;
+    protected $primaryKey = 'n_id_inst_dest';
     protected $fillable = ['desc_inst_dest','n_id_inst_dest'];
 }

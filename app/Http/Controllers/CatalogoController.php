@@ -44,22 +44,23 @@ class CatalogoController extends Controller
         $this->APP_ENV = config('services.env.config');
     }
 
-    public function hasPermission(Request $request){
+    public function hasPermission(Request $request)
+    {
         $user = new \stdClass();
         $user->idEmpleado = null;
         $user->idUsuario = null;
         $user->error_msj = null;
         $user->token = null;
 
-        $header_name = $this->APP_ENV=='prod'?'bearertoken':'Authorization';
+        $header_name = $this->APP_ENV == 'prod' ? 'bearertoken' : 'Authorization';
         $token = $request->header($header_name);
         if (!empty($token)) {
-            $header_request_name = $this->APP_ENV=='prod'?'Bearer ':'';
-            $user->token = $header_request_name.$token;
+            $header_request_name = $this->APP_ENV == 'prod' ? 'Bearer ' : '';
+            $user->token = $header_request_name . $token;
 
             $response = Http::withHeaders([
                 'Authorization' => $user->token,
-            ])->post($this->APP_SEGURIDAD. '/api/seguridad/userinfo');
+            ])->post($this->APP_SEGURIDAD . '/api/seguridad/userinfo');
             if ($response->successful()) {
                 $data = $response->json();
 
@@ -70,7 +71,7 @@ class CatalogoController extends Controller
                     $user->error_msj = 'idEmpleado no está presente en la respuesta';
                 }
             } else {
-                $user->error_msj = 'Error al comunicarse con el servicio de userinfo: '.$response->status();
+                $user->error_msj = 'Error al comunicarse con el servicio de userinfo: ' . $response->status();
             }
         }
         return $user;
@@ -85,44 +86,229 @@ class CatalogoController extends Controller
         }
 
         if ($catalogo == "sexo") {
-            $catSexo = CatSexo::find($id);
-            // Verificar si el registro existe
-            if (!$catSexo) {
-                return response()->json(['mensaje' => 'Registro no encontrado'], 404);
-            }
-            // Eliminar el registro
-            $catSexo->delete();
-            return response()->json(
-                [
-                    'status' => "OK",
-                    'mensaje' => 'Se eliminó el item satisfactoriamente',
-                    'data' => [
-                        'id' => $catSexo->id_sexo,
-                        'sexo' => $catSexo->sexo_desc,
-                        'abreviatura' => $catSexo->sexo,
+            try {
+                $catSexo = CatSexo::find($id);
+                // Verificar si el registro existe
+                if (!$catSexo) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $catSexo->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $catSexo->id_sexo,
+                            'sexo' => $catSexo->sexo_desc,
+                            'abreviatura' => $catSexo->sexo,
+                        ]
                     ]
-                ]
-                ,
-                200
-            );
-        }
-        ///////
-        if ($catalogo == "tipoDoc") {
-            $cat = CatTipoDocumento::find($id);
-            // Verificar si el registro existe
-            if (!$cat) {
-                return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
             }
-            // Eliminar el registro
-            $cat->delete();
-            return response()->json(
-                [
-                    'status' => "OK",
-                    'mensaje' => 'Se eliminó el item satisfactoriamente'
-                ]
-                ,
-                200
-            );
+        }
+        if ($catalogo == "tipoDoc") {
+            try {
+                $cat = CatTipoDocumento::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "areas") {
+            try {
+                $cat = CatAreas::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "puesto") {
+            try {
+                $cat = CatPuesto::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "unidadAds") {
+            try {
+                $cat = CatUAdscripcion::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "tipoFirma") {
+            try {
+                $cat = CatTipoFirma::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "notificacion") {
+            try {
+                $cat = CatTipoNotificacion::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "instFirmantes") {
+            try {
+                $cat = CatInstruccion::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "insDestinatarios") {
+            try {
+                $cat = CatInstruccionDest::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
+        }
+        if ($catalogo == "firmaAplicada") {
+            try {
+                $cat = CatFirmaAplicada::find($id);
+                // Verificar si el registro existe
+                if (!$cat) {
+                    return response()->json(['mensaje' => 'Registro no encontrado'], 404);
+                }
+                // Eliminar el registro
+                $cat->delete();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'mensaje' => 'Se eliminó el item satisfactoriamente'
+                    ]
+                    ,
+                    200
+                );
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Maneja la excepción de violación de integridad
+                return response()->json(['message' => 'Este registro no puede ser eliminado porque está en uso.'], 400);
+            }
         }
 
     }
@@ -133,7 +319,35 @@ class CatalogoController extends Controller
         if (empty($user->idEmpleado)) {
             return response()->json(['message' => $user->error_msj], 400);
         }
-        //////
+        if ($catalogo == "empleadoPuesto") {
+            try {
+                $catEmPues = EmpleadoPuesto::findOrFail($id);
+                $catEmPues->n_id_cat_area = $request->get('area');
+                $catEmPues->n_id_puesto = $request->get('puesto');
+                $catEmPues->fecha_alta = $request->get('fechaAlta');
+                $catEmPues->fecha_conclusion = $request->get('fechaConclusion');
+
+                $catEmPues->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catEmPues->n_id_empleado_puesto,
+                            'area' => $catEmPues->n_id_cat_area,
+                            'puesto' => $catEmPues->n_id_puesto,
+                            'fechaAlta' => $catEmPues->fecha_alta,
+                            'fechaConclusion' => $catEmPues->fecha_conclusion
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validación fallida', 'errors' => $e->errors()], 422);
+            }
+        }
         if ($catalogo == "sexo") {
             try {
                 $validatedData = $request->validate([
@@ -162,7 +376,6 @@ class CatalogoController extends Controller
                 return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
             }
         }
-        //////
         if ($catalogo == "expedientes") {
             try {
                 $validatedData = $request->validate([
@@ -191,7 +404,6 @@ class CatalogoController extends Controller
                 return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
             }
         }
-        //////
         if ($catalogo == "instFirmante") {
             try {
                 $validatedData = $request->validate([
@@ -217,7 +429,31 @@ class CatalogoController extends Controller
                 return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
             }
         }
-        //////
+        if ($catalogo == "instDestinatario") {
+            try {
+                $validatedData = $request->validate([
+                    'descripcion' => [Rule::unique('tab_cat_inst_dest', 'desc_inst_dest')->ignore($id, 'n_id_inst_dest')],
+                ]);
+                $catEdit = CatInstruccionDest::findOrFail($id);
+                $catEdit->desc_inst_dest = $validatedData['descripcion'];
+                $catEdit->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catEdit->n_id_inst_dest,
+                            'descripcion' => $catEdit->desc_inst_dest,
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
+            }
+        }
         if ($catalogo == "tipoDoc") {
             try {
                 $validatedData = $request->validate([
@@ -243,6 +479,179 @@ class CatalogoController extends Controller
                 return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
             }
         }
+        if ($catalogo == "unidadAds") {
+            try {
+                $validatedData = $request->validate([
+                    'nombreItem' => [Rule::unique('inst_u_adscripcion', 's_desc_unidad')->ignore($id, 'n_id_u_adscripcion')],
+                    'abreviatura' => [Rule::unique('inst_u_adscripcion', 's_abrev_unidad')->ignore($id, 'n_id_u_adscripcion')],
+                ]);
+                $catalogo = CatUAdscripcion::findOrFail($id);
+                $catalogo->s_desc_unidad = $validatedData['nombreItem'];
+                $catalogo->s_abrev_unidad = $validatedData['abreviatura'];
+                $catalogo->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catalogo->n_id_u_adscripcion,
+                            'descripcion' => $catalogo->s_desc_unidad,
+                            'abreviacion' => $catalogo->s_abrev_unidad,
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validacion fallida', 'errors' => $e->errors()], 422);
+            }
+        }
+        if ($catalogo == "puesto") {
+            try {
+                $validatedData = $request->validate([
+                    'descripcion' => [Rule::unique('inst_cat_puestos', 's_desc_nombramiento')->ignore($id, 'n_id_puesto')],
+                ]);
+                $catalogo = CatPuesto::findOrFail($id);
+                $catalogo->s_desc_nombramiento = $validatedData['descripcion'];
+                $catalogo->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catalogo->n_id_puesto,
+                            'descripcion' => $catalogo->s_desc_nombramiento,
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validación fallida', 'errors' => $e->errors()], 422);
+            }
+        }
+        if ($catalogo == "areas") {
+            try {
+                $validatedData = $request->validate([
+                    'descripcion' => [
+                        'required',
+                        'string',
+                        'max:255',
+                        Rule::unique('inst_cat_areas', 's_desc_area')
+                            ->where(function ($query) use ($request) {
+                                return $query->where('n_id_u_adscripcion', $request->unidadA);
+                            })
+                            ->ignore($id, 'n_id_cat_area')
+                    ],
+                    'unidadA' => 'required|integer',
+                    // Añadir validación para 'abreviatura' y 'areaPadre' según se necesite
+                    // ...
+                ]);
+                $catalogo = CatAreas::findOrFail($id);
+                $catalogo->n_id_u_adscripcion = $validatedData['unidadA'];
+                $catalogo->s_desc_area = $validatedData['descripcion'];
+                $catalogo->s_abrev_area = $request->input('abreviatura');
+                $catalogo->n_id_cat_area_padre = $request->input('areaPadre');
+                $catalogo->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catalogo->n_id_cat_area,
+                            'unidadA' => $catalogo->n_id_u_adscripcion,
+                            'descripcion' => $catalogo->s_desc_area,
+                            'abreviatura' => $catalogo->s_abrev_area,
+                            'areaPadre' => $catalogo->n_id_cat_area_padre,
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validación fallida', 'errors' => $e->errors()], 422);
+            }
+        }
+        if ($catalogo == "tipoFirma") {
+            try {
+                $validatedData = $request->validate([
+                    'descripcion' => [Rule::unique('pki_cat_tipo_firma', 'desc_tipo_firma')->ignore($id, 'id_tipo_firma')],
+                ]);
+                $catalogo = CatTipoFirma::findOrFail($id);
+                $catalogo->desc_tipo_firma = $validatedData['descripcion'];
+                $catalogo->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catalogo->id_tipo_firma,
+                            'descripcion' => $catalogo->desc_tipo_firma,
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validación fallida', 'errors' => $e->errors()], 422);
+            }
+        }
+        if ($catalogo == "notificacion") {
+            try {
+                $validatedData = $request->validate([
+                    'descripcion' => [Rule::unique('tab_cat_tipo_notificacion', 'desc_tipo')->ignore($id, 'n_id_tipo_notif')],
+                ]);
+                $catalogo = CatTipoNotificacion::findOrFail($id);
+                $catalogo->desc_tipo = $validatedData['descripcion'];
+                $catalogo->icon_tipo_notif = $request->icono;
+                $catalogo->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catalogo->n_id_tipo_notif,
+                            'descripcion' => $catalogo->desc_tipo,
+                            'icono'=> $catalogo->icon_tipo_notif
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validación fallida', 'errors' => $e->errors()], 422);
+            }
+        }
+        if ($catalogo == "firmaAplicada") {
+            try {
+                $validatedData = $request->validate([
+                    'descripcion' => [Rule::unique('pki_cat_firma_aplicada', 'desc_firma_aplicada')->ignore($id, 'id_firma_aplicada')],
+                ]);
+                $catalogo = CatFirmaAplicada::findOrFail($id);
+                $catalogo->desc_firma_aplicada = $validatedData['descripcion'];
+                $catalogo->update();
+                return response()->json(
+                    [
+                        'status' => "OK",
+                        'message' => 'Se editó correctamente el item',
+                        'data' => [
+                            'id' => $catalogo->id_firma_aplicada,
+                            'descripcion' => $catalogo->desc_firma_aplicada,
+                        ]
+                    ],
+                    200
+                );
+            } catch (ModelNotFoundException $e) {
+                return response()->json(['message' => 'Item no encontrado'], 404);
+            } catch (ValidationException $e) {
+                return response()->json(['message' => 'Validación fallida', 'errors' => $e->errors()], 422);
+            }
+        }
     }
 
     public function agregarItemCatalogo($catalogo, Request $request)
@@ -253,6 +662,7 @@ class CatalogoController extends Controller
         }
 
         ////////////////////
+
         if ($catalogo == "sexo") {
             $abreviatura = $request->get('abreviatura');
             $descripcion = $request->get('descripcion');
@@ -741,10 +1151,10 @@ class CatalogoController extends Controller
 
             // Verificar si ya existe un registro con esa descripción
             $query = CatAreas::where('s_desc_area', $descripcion);
-          /*  if ($areaPadre !== null) {
-                // Si se proporcionó un área padre, inclúyela en la consulta
-                $query->where('n_id_cat_area_padre', $areaPadre);
-            }*/
+            /*  if ($areaPadre !== null) {
+                  // Si se proporcionó un área padre, inclúyela en la consulta
+                  $query->where('n_id_cat_area_padre', $areaPadre);
+              }*/
 
             $existe = $query->first();
             if (!$existe) {
@@ -773,7 +1183,7 @@ class CatalogoController extends Controller
                     // Manejar la excepción si se produce una violación de la restricción de integridad
                     return response()->json([
                         'status' => "Error",
-                        'mensaje' => 'Error al intentar crear el registro.'.$ex,
+                        'mensaje' => 'Error al intentar crear el registro.' . $ex,
                     ], 409);
                 }
             } else {
@@ -936,6 +1346,43 @@ class CatalogoController extends Controller
                 ], 409); // Código de estado 409 Conflict
             }
         }
+        if ($catalogo == "tipoFirma") {
+            $descripcion = $request->get('descripcion');
+
+            // Verificar si ya existe un registro con esa descripción
+            $existe = CatTipoFirma::where('desc_tipo_firma', $descripcion)->first();
+
+            if (!$existe) {
+                try {
+                    // Si no existe, crea un nuevo registro
+                    $data = [
+                        'desc_tipo_firma' => $descripcion,
+                    ];
+                    $result = CatTipoFirma::create($data);
+
+                    return response()->json([
+                        'status' => "OK",
+                        'mensaje' => 'Se agregó el item satisfactoriamente',
+                        'data' => [
+                            'id' => $result->id_tipo_firma,
+                            'descripcion' => $result->desc_tipo_firma,
+                        ]
+                    ], 200);
+                } catch (\Illuminate\Database\QueryException $ex) {
+                    // Manejar la excepción si se produce una violación de la restricción de integridad
+                    return response()->json([
+                        'status' => "Error",
+                        'mensaje' => 'Error al crear el item, puede que ya exista uno con la descripción proporcionada.',
+                    ], 409);
+                }
+            } else {
+                // Si el registro ya existe, devuelve un mensaje de error
+                return response()->json([
+                    'status' => "Error",
+                    'mensaje' => 'El item con esa descripción ya existe',
+                ], 409); // Código de estado 409 Conflict
+            }
+        }
 
     }
 
@@ -954,18 +1401,6 @@ class CatalogoController extends Controller
             $catTipoFirma = Catalogo::getCatTipoFirma();
             $catPrioridad = Catalogo::getCatPrioridad();
 
-            /*$catAreas = Catalogo::getCatAreas();
-            $catPuesto = Catalogo::getCatPuesto();
-            $catSexo = Catalogo::getCatSexo();
-            $catUAdscripcion = Catalogo::getCatUAdscripcion();
-            $catFirmaAplicada = Catalogo::getCatFirmaAplicada();
-            $catEstadoUsuario = Catalogo::getCatEstadoUsuario();
-            $catEmpleados = Catalogo::getCatEmpleados();
-            $catRoles = Catalogo::getCatRoles();
-            $catConfiguracion = Catalogo::getCatConfiguracion();
-            $catEtapa = Catalogo::getCatEtapa();
-            $catNotificacion = Catalogo::getCatNotificacion();*/
-
             return response()->json(
                 [
                     'status' => "OK",
@@ -977,20 +1412,25 @@ class CatalogoController extends Controller
                         'catInstruccionFirmantes' => $catInstruccionFirmantes,
                         'catInstruccionDestinatarios' => $catInstruccionDestinatarios,
                         'catTipoFirma' => $catTipoFirma,
-                        'catPrioridad' => $catPrioridad,
-                        /* 'catUAdscripcion' => $catUAdscripcion,
-                         'catFirmaAplicada' => $catFirmaAplicada,
-                         'catEstadoUsuario' => $catEstadoUsuario,
-                         'catEmpleados' => $catEmpleados,
-                         'catRoles' => $catRoles,
-                         'catConfiguracion' => $catConfiguracion,
-                         'catEtapa' => $catEtapa,
-                         'catNotificacion' => $catNotificacion,*/
+                        'catPrioridad' => $catPrioridad
                     ]
                 ]
                 ,
                 200
             );
+        }
+        if ($pantalla == 'catalogos') {
+
+
+        }
+        if ($pantalla == 'administracion') {
+            $catalogo = Catalogo::getCatAreas();
+            $catalogo = Catalogo::getCatPuesto();
+            $catalogo = Catalogo::getCatUAdscripcion();
+            $catalogo = Catalogo::getCatEmpleados();
+
+
+
         }
 
 
@@ -1014,6 +1454,10 @@ class CatalogoController extends Controller
         $respData = Catalogo::findMenuByName($response['menu'], 'Faltantes');
 
         //consulta el catalogo por nombre
+        if ($catalogo == "empleadoPuesto") { //areas mostrar arbol
+            $catalogo = Catalogo::getEmpleadoPuesto();
+            return $catalogo;
+        }
         if ($catalogo == "areas") { //areas mostrar arbol
             $catalogo = Catalogo::getCatAreas();
             return $catalogo;
@@ -1044,6 +1488,10 @@ class CatalogoController extends Controller
         }
         if ($catalogo == "instruccion") { //instruccion documento []
             $catalogo = Catalogo::getCatInstruccion();
+            return $catalogo;
+        }
+        if ($catalogo == "instDestinatario") { //instruccion documento []
+            $catalogo = Catalogo::getCatInstruccionDest();
             return $catalogo;
         }
         if ($catalogo == "tipo-firma") {

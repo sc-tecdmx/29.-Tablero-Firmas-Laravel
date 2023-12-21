@@ -17,6 +17,10 @@ class EmpleadoPuesto extends Model
 
     protected $primaryKey ='n_id_empleado_puesto';
 
+    public $timestamps = false;
+
+    protected $fillable = ['n_id_empleado_puesto','n_id_num_empleado','n_id_puesto','n_id_cat_area','fecha_alta','fecha_conclusion'];
+
     public function puesto()
     {
         return $this->belongsTo(CatPuesto::class, 'n_id_puesto');

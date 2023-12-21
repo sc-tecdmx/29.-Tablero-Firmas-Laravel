@@ -11,5 +11,6 @@ class CatTipoNotificacion extends Model
 
     protected $table = 'tab_cat_tipo_notificacion';
     public $timestamps = false;
+    protected $primaryKey = 'n_id_tipo_notif';
     protected $fillable = ['n_id_tipo_notif','desc_tipo','icon_tipo_notif'];
 }
