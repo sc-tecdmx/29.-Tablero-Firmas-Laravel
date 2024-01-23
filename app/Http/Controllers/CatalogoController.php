@@ -495,6 +495,15 @@ class CatalogoController extends Controller
             return response()->json(['message' => $user->error_msj], 400);
         }
         if ($catalogo == "empleadoPuesto") {
+            // Validación de campos no vacíos
+            if (
+                empty($request->get('area')) ||
+                empty($request->get('puesto')) ||
+                empty($request->get('fechaAlta'))
+            ) {
+                return response()->json(['message' => 'Los campos no pueden estar vacíos'], 422);
+            }
+
             try {
                 $catEmPues = EmpleadoPuesto::findOrFail($id);
                 $catEmPues->n_id_cat_area = $request->get('area');
@@ -1017,7 +1026,6 @@ class CatalogoController extends Controller
             return response()->json(['message' => $user->error_msj], 400);
         }
         ////////////////////
-
         if ($catalogo == "sexo") {
             $abreviatura = $request->get('abreviatura');
             $descripcion = $request->get('descripcion');
@@ -1740,7 +1748,7 @@ class CatalogoController extends Controller
             }
         }
          ////
-         if ($catalogo == "roles") {
+        if ($catalogo == "roles") {
             $descripcion = $request->get('descripcion');
             $abreviatura = $request->get('abreviatura');
             $rolPadre = $request->get('rolPadre');
@@ -1783,6 +1791,7 @@ class CatalogoController extends Controller
                 ], 409); // Código de estado 409 Conflict
             }
         }
+
 
     }
 

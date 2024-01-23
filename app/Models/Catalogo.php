@@ -317,7 +317,9 @@ class Catalogo extends Model
             'empleado', // Relación con CatEmpleados
             'puesto', // Relación con CatPuesto
             'area.adscripcion' // Relación con CatAreas y luego con CatUAdscripcion
-        ])->get();
+            ])->whereHas('empleado', function ($query) {
+                $query->where('activo', 1);
+            })->get();
 
         // Transformando los resultados para incluir la información deseada
         $empleadosPuesto = $empleadoPuesto->map(function ($item) {
