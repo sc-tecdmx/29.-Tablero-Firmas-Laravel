@@ -188,6 +188,7 @@ class Catalogo extends Model
     public static function getCatEmpleados()
     {
         $catalogo = CatEmpleados::with('sexo', 'empleadoPuesto.puesto', 'empleadoPuesto.area')
+        ->where('activo', 1)
         ->orderBy('nombre', 'asc')
         ->orderBy('apellido1', 'asc')
         ->orderBy('apellido2', 'asc')
