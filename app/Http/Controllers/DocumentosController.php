@@ -174,7 +174,10 @@ class DocumentosController extends Controller
         if ($document) {
             $transformedConfiguración = $document->docConfiguracion->map(function ($confi) {
                 return [
-                    'valor' => optional($confi->configuracion)->s_valor
+                    'id'   => optional($confi->configuracion)->n_id_doc_config,
+                    'valor' => optional($confi->configuracion)->s_valor,
+                    'atributo'   => optional($confi->configuracion)->s_atributo
+
                 ];
             });
             // Transformar los datos de firmantes
