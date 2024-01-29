@@ -267,7 +267,7 @@ class DocumentosController extends Controller
                 'asunto' => optional($document)->s_asunto,
                 'contenido' => optional($document)->s_contenido,
                 'fechaCreacion' => \Carbon\Carbon::parse($document->creacion_documento_fecha)->toDateTimeString(),
-                'fechaLimiteFirma' => \Carbon\Carbon::parse($document->d_fecha_limite_firma)->toDateTimeString(),
+                'fechaLimiteFirma' => $document->d_fecha_limite_firma ? \Carbon\Carbon::parse($document->d_fecha_limite_firma)->toDateTimeString() : null,
                 'notas' => optional($document)->s_notas,
                 'configuracion' => $transformedConfiguración,
                 'firmantes' => $transformedFirmantes,
