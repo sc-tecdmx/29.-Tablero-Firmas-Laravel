@@ -255,6 +255,7 @@ class DocumentosController extends Controller
                 'tipoDocumento' => optional($document->tipoDocumento)->desc_tipo_documento,
                 'folioDocumento' => optional($document)->folio_documento,
                 'folioEspecial' => optional($document)->folio_especial,
+                'numOficio'=> optional($document)->s_num_oficio,
                 'idEmpleadoCreador' => optional($document)->n_id_num_empleado_creador,
                 'nombreEmpleado' => optional($document)->empleado->nombre,
                 'apellido1Empleado' => optional($document->empleado)->apellido1,
