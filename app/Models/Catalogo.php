@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Catalogos\CatExpedientes;
 use App\Models\Catalogos\CatNivelModulo;
-use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -72,7 +71,6 @@ class Catalogo extends Model
 
         return $branch;
     }
-
     //***************Termina Catálogo de áreas en formato de arbol***********************+ */
     public static function getNivelModulo()
     {
@@ -106,7 +104,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatSexo()
     {
         $catalogo = CatSexo::all()->map(function ($item) {
@@ -118,7 +115,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatUAdscripcion()
     {
         $catalogo = CatUAdscripcion::all()->map(function ($item) {
@@ -130,7 +126,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatFirmaAplicada()
     {
         $catalogo = CatFirmaAplicada::all()->map(function ($item) {
@@ -141,7 +136,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatInstruccion()
     {
         $catalogo = CatInstruccion::all()->map(function ($item) {
@@ -152,7 +146,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatInstruccionDest()
     {
         $catalogo = CatInstruccionDest::all()->map(function ($item) {
@@ -163,7 +156,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatTipoFirma()
     {
         $catalogo = CatTipoFirma::all()->map(function ($item) {
@@ -174,7 +166,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatEstadoUsuario()
     {
         $catalogo = CatEstadousurio::all()->map(function ($item) {
@@ -185,7 +176,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatEmpleados()
     {
         $catalogo = CatEmpleados::with('sexo', 'empleadoPuesto.puesto', 'empleadoPuesto.area')
@@ -214,7 +204,6 @@ class Catalogo extends Model
             });
         return $catalogo;
     }
-
     public static function getCatRoles()
     {
         $catalogo = CatRoles::with('rolPadre')->get()->map(function ($item) {
@@ -227,7 +216,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatDestino()
     {
         $catalogo = CatDestinoDocumento::all()->map(function ($item) {
@@ -238,7 +226,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatConfiguracion()
     {
         $catalogo = CatDocConfiguracion::all()->map(function ($item) {
@@ -250,7 +237,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatEtapaDoc()
     {
         $catalogo = CatEtapaDoc::all()->map(function ($item) {
@@ -261,7 +247,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatPrioridad()
     {
         $catalogo = CatPrioridad::all()->map(function ($item) {
@@ -272,7 +257,6 @@ class Catalogo extends Model
         });
         return $catalogo;
     }
-
     public static function getCatNotificacion()
     {
         $catalogo = CatTipoNotificacion::all()->map(function ($item) {
@@ -311,7 +295,6 @@ class Catalogo extends Model
 
         return $catalogo;
     }
-
     public static function getEmpleadoPuesto()
     {
         $empleadoPuesto = EmpleadoPuesto::with([
@@ -340,7 +323,6 @@ class Catalogo extends Model
         // Devolviendo la respuesta como JSON
         return response()->json($empleadosPuesto);
     }
-
     public static function getCatAplicaciones()
     {
         $catalogo = CatModulos::join('seg_cat_nivel_modulo', 'seg_org_modulos.n_id_nivel', '=', 'seg_cat_nivel_modulo.n_id_nivel')

@@ -16,49 +16,8 @@ use Illuminate\Validation\Rule;
 
 class GruposController extends Controller
 {
-    public $APP_SEGURIDAD;
-    public $APP_ENV;
-    public function __construct()
-    {
-        $this->APP_SEGURIDAD = config('services.seguridad.url');
-        $this->APP_ENV = config('services.env.config');
-    }
-
-    public function hasPermission(Request $request){
-        $user = new \stdClass();
-        $user->idEmpleado = null;
-        $user->idUsuario = null;
-        $user->error_msj = null;
-        $user->token = null;
-
-        $header_name = $this->APP_ENV=='prod'?'bearertoken':'Authorization';
-        $token = $request->header($header_name);
-        if (!empty($token)) {
-            $header_request_name = $this->APP_ENV=='prod'?'Bearer ':'';
-            $user->token = $header_request_name.$token;
-
-            $response = Http::withHeaders([
-                'Authorization' => $user->token,
-            ])->post($this->APP_SEGURIDAD. '/api/seguridad/userinfo');
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if (isset($data['data']) && isset($data['data']['idEmpleado'])) {
-                    $user->idEmpleado = $data['data']['idEmpleado'];
-                    $user->idUsuario = $data['data']['idUsuario'];
-                } else {
-                    $user->error_msj = 'idEmpleado no está presente en la respuesta';
-                }
-            } else {
-                $user->error_msj = 'Error al comunicarse con el servicio de userinfo: '.$response->status();
-            }
-        }
-        return $user;
-    }
-
     public function crearGrupo(Request $request)
     {
-
         $user = $this->hasPermission($request);
         if (empty($user->idEmpleado)) {
             return response()->json(['message' => $user->error_msj], 400);
@@ -213,8 +172,10 @@ class GruposController extends Controller
             // Actualizar o añadir personas
             foreach ($validatedData['personas'] as $personaData) {
                 GrupoFirmaPersonas::updateOrCreate(
-                    ['n_id_grupo_personas' => $idGrupo,
-                     'n_id_num_empleado' => $personaData['idEmpleado']],
+                    [
+                        'n_id_grupo_personas' => $idGrupo,
+                        'n_id_num_empleado' => $personaData['idEmpleado']
+                    ],
                     [
                         'n_id_inst_firmante' => $personaData['idInstFirmante'],
                         'n_id_inst_destinatario' => $personaData['idInstDest']

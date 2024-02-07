@@ -5,8 +5,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\VersionController;
 use App\Http\Controllers\FirmaDocumentoController;
-use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\DocumentosController;
+use App\Http\Controllers\CatalogoConsultarController;
+use App\Http\Controllers\CatalogoCrearController;
+use App\Http\Controllers\CatalogoEditarController;
+use App\Http\Controllers\CatalogoEliminarController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -33,15 +36,15 @@ Route::post('upload-documento', [FirmaDocumentoController::class, 'subirDocument
 
 // Catálogos
 
-Route::get('get-catalogo/{catalogo}', [CatalogoController::class, 'getCatalogo']);
+Route::get('get-catalogo/{catalogo}', [CatalogoConsultarController::class, 'getCatalogo']);
 
-Route::post('agregar-item-catalogo/{catalogo}', [CatalogoController::class, 'agregarItemCatalogo']);
+Route::post('agregar-item-catalogo/{catalogo}', [CatalogoCrearController::class, 'agregarItemCatalogo']);
 
-Route::put('editar-item-catalogo/{catalogo}/{id}', [CatalogoController::class, 'editarItemCatalogo']);
+Route::put('editar-item-catalogo/{catalogo}/{id}', [CatalogoEditarController::class, 'editarItemCatalogo']);
 
-Route::delete('eliminar-item-catalogo/{catalogo}/{id}', [CatalogoController::class, 'eliminarItemCatalogo']);
+Route::delete('eliminar-item-catalogo/{catalogo}/{id}', [CatalogoEliminarController::class, 'eliminarItemCatalogo']);
 
-Route::get('get-catalogo-pantalla/{pantalla}', [CatalogoController::class, 'getCatalogoPantalla']);
+Route::get('get-catalogo-pantalla/{pantalla}', [CatalogoConsultarController::class, 'getCatalogoPantalla']);
 
 // Grupos
 Route::post('grupos/agregar-grupo', [GruposController::class, 'crearGrupo']);
@@ -61,7 +64,7 @@ Route::get('documento/{documentoId}', [DocumentosController::class, 'getDocument
 Route::get('busqueda-general', [DocumentosController::class, 'getDocumentsByQuery']);
 
 //autocompletado
-Route::get('/autocompletado', [CatalogoController::class, 'autocompletado']);
+Route::get('/autocompletado', [CatalogoConsultarController::class, 'autocompletado']);
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works']);
