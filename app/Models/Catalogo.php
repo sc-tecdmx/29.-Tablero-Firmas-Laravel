@@ -25,6 +25,7 @@ use App\Models\Catalogos\CatEtapaDoc;
 use App\Models\Catalogos\CatPrioridad;
 use App\Models\Catalogos\CatTipoNotificacion;
 use App\Models\Catalogos\CatTipoDocumento;
+use App\Models\Catalogos\CatModulos;
 
 
 class Catalogo extends Model
@@ -188,29 +189,29 @@ class Catalogo extends Model
     public static function getCatEmpleados()
     {
         $catalogo = CatEmpleados::with('sexo', 'empleadoPuesto.puesto', 'empleadoPuesto.area')
-        ->where('activo', 1)
-        ->orderBy('nombre', 'asc')
-        ->orderBy('apellido1', 'asc')
-        ->orderBy('apellido2', 'asc')
-        ->get()->map(function ($item) {
-            return [
-                'id' => $item->n_id_num_empleado,
-                'nombre' => $item->nombre,
-                'apellido1' => $item->apellido1,
-                'apellido2' => $item->apellido2,
-                'area' => optional($item->empleadoPuesto->area)->s_desc_area,
-                'puesto' => optional($item->empleadoPuesto->puesto)->s_desc_nombramiento,
-                'sexo' => $item->sexo->sexo_desc,
-                'emailP' => $item->s_email_pers,
-                'emailI' => $item->s_email_inst,
-                'telPers' => $item->tel_pers,
-                'telInst' => $item->tel_inst,
-                'curp' => $item->curp,
-                'rfc' => $item->rfc,
-                'fotografia' => $item->path_fotografia,
-                'idUsuario' => '/api/get-usuarios/' . $item->n_id_usuario
-            ];
-        });
+            ->where('activo', 1)
+            ->orderBy('nombre', 'asc')
+            ->orderBy('apellido1', 'asc')
+            ->orderBy('apellido2', 'asc')
+            ->get()->map(function ($item) {
+                return [
+                    'id' => $item->n_id_num_empleado,
+                    'nombre' => $item->nombre,
+                    'apellido1' => $item->apellido1,
+                    'apellido2' => $item->apellido2,
+                    'area' => optional($item->empleadoPuesto->area)->s_desc_area,
+                    'puesto' => optional($item->empleadoPuesto->puesto)->s_desc_nombramiento,
+                    'sexo' => $item->sexo->sexo_desc,
+                    'emailP' => $item->s_email_pers,
+                    'emailI' => $item->s_email_inst,
+                    'telPers' => $item->tel_pers,
+                    'telInst' => $item->tel_inst,
+                    'curp' => $item->curp,
+                    'rfc' => $item->rfc,
+                    'fotografia' => $item->path_fotografia,
+                    'idUsuario' => '/api/get-usuarios/' . $item->n_id_usuario
+                ];
+            });
         return $catalogo;
     }
 
@@ -317,17 +318,17 @@ class Catalogo extends Model
             'empleado', // Relación con CatEmpleados
             'puesto', // Relación con CatPuesto
             'area.adscripcion' // Relación con CatAreas y luego con CatUAdscripcion
-            ])->whereHas('empleado', function ($query) {
-                $query->where('activo', 1);
-            })->get();
+        ])->whereHas('empleado', function ($query) {
+            $query->where('activo', 1);
+        })->get();
 
         // Transformando los resultados para incluir la información deseada
         $empleadosPuesto = $empleadoPuesto->map(function ($item) {
             return [
-                "id"=>$item->n_id_empleado_puesto,
+                "id" => $item->n_id_empleado_puesto,
                 'empleado' => $item->empleado->nombre,
-                'apellido1'=>$item->empleado->apellido1,
-                'apellido2'=>$item->empleado->apellido2,
+                'apellido1' => $item->empleado->apellido1,
+                'apellido2' => $item->empleado->apellido2,
                 'unidadA' => optional($item->area->adscripcion)->s_desc_unidad,
                 'area' => optional($item->area)->s_desc_area,
                 'puesto' => optional($item->puesto)->s_desc_nombramiento,
@@ -338,6 +339,24 @@ class Catalogo extends Model
 
         // Devolviendo la respuesta como JSON
         return response()->json($empleadosPuesto);
+    }
+
+    public static function getCatAplicaciones()
+    {
+        $catalogo = CatModulos::join('seg_cat_nivel_modulo', 'seg_org_modulos.n_id_nivel', '=', 'seg_cat_nivel_modulo.n_id_nivel')
+                    ->where('seg_cat_nivel_modulo.desc_nivel', 'Aplicación')
+                    ->where('seg_org_modulos.desc_modulo', '<>', 'No parent') // Excluir registros con descModulo 'No parent'
+                    ->get(['seg_org_modulos.*', 'seg_cat_nivel_modulo.desc_nivel as nivel'])
+                    ->map(function ($item) {
+                        return [
+                            'idModulo' => $item->n_id_modulo,
+                            'idNivel' => $item->n_id_nivel,
+                            'nivel' => $item->nivel,
+                            'descModulo' => $item->desc_modulo,
+                            // Asumiendo que necesitas otros campos, los puedes agregar aquí
+                        ];
+                    });
+        return $catalogo;
     }
 
     /**----------------- */

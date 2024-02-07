@@ -1943,6 +1943,10 @@ class CatalogoController extends Controller
             $catalogo = Catalogo::getCatTipoDocumento($user->idEmpleado);
             return $catalogo;
         }
+        if ($catalogo == "aplicacion") {
+            $catalogo = Catalogo::getCatAplicaciones();
+            return $catalogo;
+        }
         return null;
     }
 

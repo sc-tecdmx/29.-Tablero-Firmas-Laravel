@@ -353,8 +353,8 @@ class ComposerStaticInit59dbde6c6e20c9836acbccfca2cdda76
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
@@ -574,6 +574,8 @@ class ComposerStaticInit59dbde6c6e20c9836acbccfca2cdda76
         'App\\Models\\DocumentoAdjunto' => __DIR__ . '/../..' . '/app/Models/DocumentoAdjunto.php',
         'App\\Models\\DocumentoWorkflow' => __DIR__ . '/../..' . '/app/Models/DocumentoWorkflow.php',
         'App\\Models\\Documentos' => __DIR__ . '/../..' . '/app/Models/Documentos.php',
+        'App\\Models\\DocumentosDestinatarios' => __DIR__ . '/../..' . '/app/Models/DocumentosDestinatarios.php',
+        'App\\Models\\DocumentosFirmantesPki' => __DIR__ . '/../..' . '/app/Models/DocumentosFirmantesPki.php',
         'App\\Models\\EmpleadoPuesto' => __DIR__ . '/../..' . '/app/Models/EmpleadoPuesto.php',
         'App\\Models\\FirmaDocumento' => __DIR__ . '/../..' . '/app/Models/FirmaDocumento.php',
         'App\\Models\\Firmantes' => __DIR__ . '/../..' . '/app/Models/Firmantes.php',

@@ -52,6 +52,8 @@ return array(
     'App\\Models\\DocumentoAdjunto' => $baseDir . '/app/Models/DocumentoAdjunto.php',
     'App\\Models\\DocumentoWorkflow' => $baseDir . '/app/Models/DocumentoWorkflow.php',
     'App\\Models\\Documentos' => $baseDir . '/app/Models/Documentos.php',
+    'App\\Models\\DocumentosDestinatarios' => $baseDir . '/app/Models/DocumentosDestinatarios.php',
+    'App\\Models\\DocumentosFirmantesPki' => $baseDir . '/app/Models/DocumentosFirmantesPki.php',
     'App\\Models\\EmpleadoPuesto' => $baseDir . '/app/Models/EmpleadoPuesto.php',
     'App\\Models\\FirmaDocumento' => $baseDir . '/app/Models/FirmaDocumento.php',
     'App\\Models\\Firmantes' => $baseDir . '/app/Models/Firmantes.php',
